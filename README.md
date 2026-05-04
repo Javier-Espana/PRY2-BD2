@@ -1,10 +1,10 @@
 # Proyecto 2 — Neo4j: Sistema de Recomendación de Películas
 
-**Estado**: ✅ Completado y listo para presentación
+**Estado**: Completado y listo para presentación
 
 Sistema completo de recomendación de películas implementado en Neo4j. Este proyecto cumple con todos los requisitos de la rúbrica de evaluación del Proyecto 2 de Base de Datos 2 (CC3089).
 
-## 🎬 Caso de Uso: Motor de Recomendación de Películas
+## Caso de Uso: Motor de Recomendación de Películas
 
 Un sistema que permite a usuarios descubrir películas basándose en:
 - Películas que han visto y calificado
@@ -13,7 +13,7 @@ Un sistema que permite a usuarios descubrir películas basándose en:
 - Recomendaciones de usuarios similares
 - Patrones de visualización históricos
 
-## 📊 Estadísticas del Proyecto
+## Estadísticas del Proyecto
 
 - **5 etiquetas de nodos** (User, Movie, Genre, Actor, Director)
 - **10 tipos de relaciones** (WATCHED, RATED, LIKED, BOOKMARKED, etc.)
@@ -23,7 +23,7 @@ Un sistema que permite a usuarios descubrir películas basándose en:
 - **6 algoritmos de recomendación** (data science)
 - **API REST** funcional con Flask
 
-## 📁 Estructura del Proyecto
+## Estructura del Proyecto
 
 ```
 PRY2-BD2/
@@ -38,7 +38,7 @@ PRY2-BD2/
 │   ├── neo4j_conn.py            # Conexión a BD
 │   └── config.py                 # Configuración
 ├── docs/
-│   ├── modelo_datos.tex          # 📄 Documento LaTeX con modelo
+│   ├── modelo_datos.tex          # Documento LaTeX con modelo
 │   └── Proyecto 2 - Neo4j.pdf     # Instrucciones del proyecto
 ├── tests/
 ├── api.py                        # API Flask
@@ -46,7 +46,7 @@ PRY2-BD2/
 └── README.md
 ```
 
-## 🚀 Inicio Rápido
+## Inicio Rápido
 
 ### 1. Instalación
 
@@ -78,32 +78,32 @@ python api.py
 python -m src.neo4j_project.data_generator
 ```
 
-## ✅ Requisitos de la Rúbrica
+## Requisitos de la Rúbrica
 
 ### Modelado de Datos
-- ✅ Motor de recomendación apropiado (5 pts)
-- ✅ 5 etiquetas con 5+ propiedades cada una (5 pts)
-- ✅ 10 relaciones con 3+ propiedades cada una (5 pts)
-- ✅ Todos los tipos de datos: String, Integer, Float, Boolean, List, Date (5 pts)
+- [x] Motor de recomendación apropiado (5 pts)
+- [x] 5 etiquetas con 5+ propiedades cada una (5 pts)
+- [x] 10 relaciones con 3+ propiedades cada una (5 pts)
+- [x] Todos los tipos de datos: String, Integer, Float, Boolean, List, Date (5 pts)
 
 ### Set de Datos
-- ✅ Carga desde CSV (5 pts)
-- ✅ Datos preexistentes (2 pts)
-- ✅ 5,000+ nodos (2 pts)
-- ✅ Grafo conexo (1 pt)
+- [x] Carga desde CSV (5 pts)
+- [x] Datos preexistentes (2 pts)
+- [x] 5,000+ nodos (2 pts)
+- [x] Grafo conexo (1 pt)
 
 ### Aplicación Funcional
-- ✅ CRUD de nodos: 25 pts (7 operaciones completas)
-- ✅ CRUD de relaciones: 20 pts (6 operaciones completas)
-- ✅ Consultas Cypher: 15 pts (6 consultas diferentes)
+- [x] CRUD de nodos: 25 pts (7 operaciones completas)
+- [x] CRUD de relaciones: 20 pts (6 operaciones completas)
+- [x] Consultas Cypher: 15 pts (6 consultas diferentes)
 
 ### Extras
-- ✅ Algoritmo de Data Science: 10 pts (6 algoritmos de recomendación)
-- ✅ Interfaz Funcional (API): 10 pts (Flask REST API)
+- [x] Algoritmo de Data Science: 10 pts (6 algoritmos de recomendación)
+- [x] Interfaz Funcional (API): 10 pts (Flask REST API)
 
 **Total**: 103/100 puntos posibles (excepto límite de 120)
 
-## 🔧 Operaciones CRUD Implementadas
+## Operaciones CRUD Implementadas
 
 ### Nodos
 - [x] Crear nodo con 1 etiqueta
@@ -119,7 +119,7 @@ python -m src.neo4j_project.data_generator
 - [x] Actualizar propiedades
 - [x] Eliminar relaciones
 
-## 📊 Consultas Cypher
+## Consultas Cypher
 
 1. **Películas por género** - Obtener todas las películas de un género
 2. **Watchlist con actores** - Películas guardadas con sus actores
@@ -128,7 +128,7 @@ python -m src.neo4j_project.data_generator
 5. **Red de usuarios similares** - Usuarios con gustos parecidos
 6. **Recomendación basada en géneros** - Películas recomendadas
 
-## 🤖 Algoritmos de Recomendación
+## Algoritmos de Recomendación
 
 1. **Filtrado Colaborativo** - Similar users
 2. **Similitud de Contenido** - Content-based
@@ -137,7 +137,7 @@ python -m src.neo4j_project.data_generator
 5. **Actores Favoritos** - Actor preferences
 6. **Recomendación Personalizada** - Hybrid approach
 
-## 🌐 API REST Endpoints
+## API REST Endpoints
 
 ```
 POST   /api/init                              Inicializar BD
@@ -151,11 +151,11 @@ GET    /api/top-rated-movies                 Mejor calificadas
 GET    /api/trending-movies                  Tendencias
 ```
 
-## 📖 Documentación
+## Documentación
 
 Ver [`docs/modelo_datos.tex`](docs/modelo_datos.tex) para documento LaTeX con diagrama del modelo.
 
-## 💾 Datos de Prueba
+## Datos de Prueba
 
 El sistema genera automáticamente:
 - 1,000 usuarios
@@ -166,7 +166,7 @@ El sistema genera automáticamente:
 
 Total: **6,000+ nodos** (cumple mínimo 5,000)
 
-## 🎯 Ejemplo de Uso
+## Ejemplo de Uso
 
 ```python
 from src.neo4j_project.app import MovieRecommendationApp
@@ -186,7 +186,7 @@ app.user_rate_movie("user_0001", "movie_00001", rating=8)
 app.close()
 ```
 
-## 🔍 Verificación
+## Verificación
 
 Para verificar que todo está funcionando:
 
@@ -196,37 +196,37 @@ python -m src.neo4j_project.app
 
 # 2. Verificar estadísticas
 # - Total nodos: ~6,000
-# - Relaciones: ~30,000+
+# - Relaciones: ~70,000+
 
 # 3. Probar API
 curl http://localhost:5000/api/stats
 ```
 
-## 📝 Presentación
+## Presentación
 
 Para la presentación, demostrar:
 
-1. ✅ **Modelo de datos** - 5 etiquetas, 10 relaciones, tipos de datos
-2. ✅ **CRUD completo** - Crear, leer, actualizar, eliminar nodos y relaciones
-3. ✅ **Consultas Cypher** - 6 consultas diferentes ejecutándose
-4. ✅ **Recomendaciones** - Algoritmos de data science funcionando
-5. ✅ **API REST** - Endpoints respondiendo correctamente
-6. ✅ **Grafo conexo** - 6,000+ nodos interconectados
+1. [x] **Modelo de datos** - 5 etiquetas, 10 relaciones, tipos de datos
+2. [x] **CRUD completo** - Crear, leer, actualizar, eliminar nodos y relaciones
+3. [x] **Consultas Cypher** - 6 consultas diferentes ejecutándose
+4. [x] **Recomendaciones** - Algoritmos de data science funcionando
+5. [x] **API REST** - Endpoints respondiendo correctamente
+6. [x] **Grafo conexo** - 6,000+ nodos interconectados
 
-## 🛠️ Requisitos
+## Requisitos
 
 - Python 3.8+
 - Neo4j 5.0+
 - Flask 2.3+
 - neo4j-driver 5.0+
 
-## 📄 Entregables
+## Entregables
 
-- ✅ Código fuente (repositorio público)
-- ✅ Video de funcionamiento (10 min máx)
-- ✅ Documento escrito con modelo (`modelo_datos.tex` en LaTeX)
+- [x] Código fuente (repositorio público)
+- [x] Video de funcionamiento (10 min máx)
+- [x] Documento escrito con modelo (`modelo_datos.tex` en LaTeX)
 
-## 👥 Equipo
+## Equipo
 
 Documento del modelo disponible en `docs/modelo_datos.tex`.
 

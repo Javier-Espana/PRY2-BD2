@@ -56,7 +56,7 @@ def demo_crud_operations(app):
     print_section("3. OPERACIONES CRUD")
     
     # CREATE
-    print("\n▶ CREATE - Creando nuevos nodos...")
+    print("\nCREATE - Creando nuevos nodos...")
     
     new_user = app.create_user({
         "user_id": "user_demo_001",
@@ -69,18 +69,18 @@ def demo_crud_operations(app):
     print("    Usuario creado exitosamente")
     
     # READ
-    print("\n▶ READ - Leyendo datos...")
+    print("\nREAD - Leyendo datos...")
     user = app.get_user("user_demo_001")
     if user:
         print(f"    Usuario encontrado: {user['nombre']} ({user['email']})")
     
     # UPDATE
-    print("\n▶ UPDATE - Actualizando propiedades...")
+    print("\nUPDATE - Actualizando propiedades...")
     updated = app.update_user("user_demo_001", {"edad": 26, "país": "Estados Unidos"})
     print(f"    Usuario actualizado: {updated['nombre']} ahora tiene {updated['edad']} años")
     
     # DELETE
-    print("\n▶ DELETE - Eliminando nodo...")
+    print("\nDELETE - Eliminando nodo...")
     deleted = app.delete_user("user_demo_001")
     print(f"    Usuario eliminado: {deleted}")
 
@@ -123,7 +123,7 @@ def demo_recommendations(app):
     
     print(f"\n Generando recomendaciones para {user_id}...\n")
     
-    print("▶ Estrategia 1: Filtrado Colaborativo")
+    print("Estrategia 1: Filtrado Colaborativo")
     try:
         recs = app.recommend_collaborative_filtering(user_id, limit=3)
         if recs:
@@ -134,12 +134,12 @@ def demo_recommendations(app):
     except:
         print("   (Sin suficientes datos)")
     
-    print("\n▶ Estrategia 2: Recomendaciones Tendencia")
+    print("\nEstrategia 2: Recomendaciones Tendencia")
     trends = app.get_trending_movies(3)
     for i, movie in enumerate(trends, 1):
         print(f"   {i}. {movie['película']} - {movie['vistas_ultimos_30_dias']} vistas")
     
-    print("\n▶ Estrategia 3: Por Afinidad de Género")
+    print("\nEstrategia 3: Por Afinidad de Género")
     try:
         genre_recs = app.recommend_by_genre(user_id, limit=3)
         if genre_recs:
@@ -150,7 +150,7 @@ def demo_recommendations(app):
     except:
         print("   (Sin suficientes datos)")
     
-    print("\n▶ Estrategia 4: Recomendación Personalizada (Híbrida)")
+    print("\nEstrategia 4: Recomendación Personalizada (Hibrida)")
     try:
         personalized = app.get_personalized_recommendations(user_id, limit=3)
         if personalized:
@@ -172,7 +172,7 @@ def demo_interactions(app):
     print(f"\n Usuario {user_id} interactuando con películas...")
     
     # Watch
-    print(f"\n▶ Marcar película como vista...")
+    print("\nMarcar pelicula como vista...")
     try:
         app.user_watch_movie(user_id, movie_id)
         print(f"    Película {movie_id} marcada como vista")
@@ -180,7 +180,7 @@ def demo_interactions(app):
         print(f"    No se pudo marcar (relación puede ya existir)")
     
     # Rate
-    print(f"\n▶ Calificar película (8/10)...")
+    print("\nCalificar pelicula (8/10)...")
     try:
         app.user_rate_movie(user_id, movie_id, rating=8)
         print(f"    Película calificada con 8/10")
@@ -188,7 +188,7 @@ def demo_interactions(app):
         print(f"    No se pudo calificar (relación puede ya existir)")
     
     # Like
-    print(f"\n▶ Marcar como favorita...")
+    print("\nMarcar como favorita...")
     try:
         app.user_like_movie(user_id, movie_id)
         print(f"    Película agregada a favoritos")
@@ -198,12 +198,8 @@ def demo_interactions(app):
 
 def main():
     """Función principal."""
-    print("""
-╔═══════════════════════════════════════════════════════════════════╗
-║  SISTEMA DE RECOMENDACIÓN DE PELÍCULAS - DEMO                     ║
-║  Proyecto 2 - Base de Datos 2 (CC3089)                            ║
-╚═══════════════════════════════════════════════════════════════════╝
-    """)
+    print("\nSISTEMA DE RECOMENDACION DE PELICULAS - DEMO")
+    print("Proyecto 2 - Base de Datos 2 (CC3089)\n")
     
     try:
         # 1. Inicialización

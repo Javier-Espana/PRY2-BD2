@@ -29,6 +29,8 @@ class MovieRecommendationApp:
     def initialize_database(self, clear=True):
         """Inicializar la base de datos con datos de prueba."""
         print("Inicializando base de datos...")
+
+        self.conn.verify_connectivity()
         
         if clear:
             print("  - Limpiando datos existentes...")
@@ -283,7 +285,7 @@ class MovieRecommendationApp:
 
 def main():
     """Función principal de ejemplo."""
-    print("🎬 Sistema de Recomendación de Películas - Neo4j\n")
+    print(" Sistema de Recomendación de Películas - Neo4j\n")
     
     app = MovieRecommendationApp()
     
@@ -328,6 +330,8 @@ def main():
         print(" Aplicación funcionando correctamente!")
         print("=" * 60)
         
+    except RuntimeError as exc:
+        print(str(exc))
     finally:
         app.close()
 

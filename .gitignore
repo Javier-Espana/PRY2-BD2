@@ -8,6 +8,5 @@ data/
 .coverage
 dist/
 build/
-.env
 *.pyc
 /.vscode/

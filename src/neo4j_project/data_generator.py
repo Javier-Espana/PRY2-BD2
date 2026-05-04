@@ -320,7 +320,7 @@ class DataGenerator:
             writer.writeheader()
             writer.writerows(data)
         
-        print(f"✓ Generado: {filepath} ({len(data)} registros)")
+        print(f"Generado: {filepath} ({len(data)} registros)")
         return filepath
     
     @staticmethod
