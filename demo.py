@@ -200,8 +200,8 @@ def main():
     """Función principal."""
     print("""
 ╔═══════════════════════════════════════════════════════════════════╗
-║  SISTEMA DE RECOMENDACIÓN DE PELÍCULAS - DEMO                 ║
-║  Proyecto 2 - Base de Datos 2 (CC3089)                           ║
+║  SISTEMA DE RECOMENDACIÓN DE PELÍCULAS - DEMO                     ║
+║  Proyecto 2 - Base de Datos 2 (CC3089)                            ║
 ╚═══════════════════════════════════════════════════════════════════╝
     """)
     
