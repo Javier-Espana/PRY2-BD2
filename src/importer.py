@@ -1,359 +1,297 @@
-"""Importador de datos CSV a Neo4j.
+"""Importador de datos CSV a Neo4j para la Cadena de Suministros.
 
-Carga datos de archivos CSV y establece relaciones en la base de datos.
+Implementa importadores básicos para proveedores, productos, órdenes,
+inventarios, centros de distribución y transportes, así como las
+relaciones principales definidas en el planteamiento.
 """
+
 from .neo4j_conn import get_connection
 
 
 class DataImporter:
-    """Importa datos de CSV a Neo4j."""
-    
+    """Importa datos de CSV a Neo4j para el dominio de supply-chain."""
+
     def __init__(self, conn=None):
         self.conn = conn or get_connection()
-    
-    def import_users(self, csv_path: str) -> int:
-        """Importar usuarios desde CSV."""
+
+    def import_suppliers(self, csv_path: str) -> int:
+        """Importar proveedores desde CSV."""
+
         def _import(tx):
             query = """
-            LOAD CSV WITH HEADERS FROM "file:///" + $file as row
-            CREATE (u:User {
-                user_id: row.user_id,
-                email: row.email,
+            LOAD CSV WITH HEADERS FROM "file:///" + $file AS row
+            CREATE (:Supplier {
+                id_proveedor: toInteger(row.id_proveedor),
                 nombre: row.nombre,
-                edad: toInteger(row.edad),
-                país: row.país,
-                fechaRegistro: date(row.fechaRegistro)
+                pais: row.pais,
+                rating: toFloat(row.rating),
+                activo: row.activo = 'true',
+                categorias: CASE WHEN row.categorias = '' THEN [] ELSE split(row.categorias, '|') END
             })
-            RETURN count(*) as count
+            RETURN count(*) AS count
             """
-            result = tx.run(query, file=csv_path)
-            return result.single()["count"]
-        
-        return self.conn.execute_write(_import)
-    
-    def import_movies(self, csv_path: str) -> int:
-        """Importar películas desde CSV."""
-        def _import(tx):
-            query = """
-            LOAD CSV WITH HEADERS FROM "file:///" + $file as row
-            CREATE (m:Movie {
-                movie_id: row.movie_id,
-                título: row.título,
-                año: toInteger(row.año),
-                duración: toInteger(row.duración),
-                presupuesto: toFloat(row.presupuesto),
-                descripción: row.descripción
-            })
-            RETURN count(*) as count
-            """
-            result = tx.run(query, file=csv_path)
-            return result.single()["count"]
-        
-        return self.conn.execute_write(_import)
-    
-    def import_genres(self, csv_path: str) -> int:
-        """Importar géneros desde CSV."""
-        def _import(tx):
-            query = """
-            LOAD CSV WITH HEADERS FROM "file:///" + $file as row
-            CREATE (g:Genre {
-                genre_id: row.genre_id,
-                nombre: row.nombre,
-                descripción: row.descripción,
-                películas_totales: toInteger(row.películas_totales),
-                popularidad: toFloat(row.popularidad)
-            })
-            RETURN count(*) as count
-            """
-            result = tx.run(query, file=csv_path)
-            return result.single()["count"]
-        
-        return self.conn.execute_write(_import)
-    
-    def import_actors(self, csv_path: str) -> int:
-        """Importar actores desde CSV."""
-        def _import(tx):
-            query = """
-            LOAD CSV WITH HEADERS FROM "file:///" + $file as row
-            CREATE (a:Actor {
-                actor_id: row.actor_id,
-                nombre: row.nombre,
-                fechaNacimiento: date(row.fechaNacimiento),
-                nacionalidad: row.nacionalidad,
-                biografía: row.biografía,
-                premios: CASE WHEN row.premios = '' THEN [] ELSE split(row.premios, '|') END
-            })
-            RETURN count(*) as count
-            """
-            result = tx.run(query, file=csv_path)
-            return result.single()["count"]
-        
-        return self.conn.execute_write(_import)
-    
-    def import_directors(self, csv_path: str) -> int:
-        """Importar directores desde CSV."""
-        def _import(tx):
-            query = """
-            LOAD CSV WITH HEADERS FROM "file:///" + $file as row
-            CREATE (d:Director {
-                director_id: row.director_id,
-                nombre: row.nombre,
-                fechaNacimiento: date(row.fechaNacimiento),
-                nacionalidad: row.nacionalidad,
-                películas_dirigidas: toInteger(row.películas_dirigidas),
-                bio: row.bio
-            })
-            RETURN count(*) as count
-            """
-            result = tx.run(query, file=csv_path)
-            return result.single()["count"]
-        
-        return self.conn.execute_write(_import)
-    
-    def import_watched_relationships(self, csv_path: str) -> int:
-        """Importar relaciones WATCHED."""
-        def _import(tx):
-            query = """
-            LOAD CSV WITH HEADERS FROM "file:///" + $file as row
-            MATCH (u:User {user_id: row.user_id})
-            MATCH (m:Movie {movie_id: row.movie_id})
-            CREATE (u)-[:WATCHED {
-                fecha: date(row.fecha),
-                duracion_visto: toInteger(row.duracion_visto),
-                completado: row.completado = 'true'
-            }]->(m)
-            RETURN count(*) as count
-            """
-            result = tx.run(query, file=csv_path)
-            return result.single()["count"]
-        
-        return self.conn.execute_write(_import)
-    
-    def import_rated_relationships(self, csv_path: str) -> int:
-        """Importar relaciones RATED."""
-        def _import(tx):
-            query = """
-            LOAD CSV WITH HEADERS FROM "file:///" + $file as row
-            MATCH (u:User {user_id: row.user_id})
-            MATCH (m:Movie {movie_id: row.movie_id})
-            CREATE (u)-[:RATED {
-                puntuacion: toInteger(row.puntuacion),
-                fecha: date(row.fecha),
-                útil: row.útil = 'true'
-            }]->(m)
-            RETURN count(*) as count
-            """
-            result = tx.run(query, file=csv_path)
-            return result.single()["count"]
-        
-        return self.conn.execute_write(_import)
-    
-    def import_liked_relationships(self, csv_path: str) -> int:
-        """Importar relaciones LIKED."""
-        def _import(tx):
-            query = """
-            LOAD CSV WITH HEADERS FROM "file:///" + $file as row
-            MATCH (u:User {user_id: row.user_id})
-            MATCH (m:Movie {movie_id: row.movie_id})
-            CREATE (u)-[:LIKED {
-                fecha: date(row.fecha),
-                motivación: row.motivación,
-                intensidad: toInteger(row.intensidad)
-            }]->(m)
-            RETURN count(*) as count
-            """
-            result = tx.run(query, file=csv_path)
-            return result.single()["count"]
-        
-        return self.conn.execute_write(_import)
-    
-    def import_bookmarked_relationships(self, csv_path: str) -> int:
-        """Importar relaciones BOOKMARKED."""
-        def _import(tx):
-            query = """
-            LOAD CSV WITH HEADERS FROM "file:///" + $file as row
-            MATCH (u:User {user_id: row.user_id})
-            MATCH (m:Movie {movie_id: row.movie_id})
-            CREATE (u)-[:BOOKMARKED {
-                fecha: date(row.fecha),
-                prioridad: toInteger(row.prioridad),
-                recordatorio: row.recordatorio = 'true'
-            }]->(m)
-            RETURN count(*) as count
-            """
-            result = tx.run(query, file=csv_path)
-            return result.single()["count"]
-        
-        return self.conn.execute_write(_import)
-    
-    def import_has_genre_relationships(self, csv_path: str) -> int:
-        """Importar relaciones HAS_GENRE."""
-        def _import(tx):
-            query = """
-            LOAD CSV WITH HEADERS FROM "file:///" + $file as row
-            MATCH (m:Movie {movie_id: row.movie_id})
-            MATCH (g:Genre {genre_id: row.genre_id})
-            CREATE (m)-[:HAS_GENRE {
-                es_principal: row.es_principal = 'true',
-                peso: toFloat(row.peso),
-                origen: row.origen
-            }]->(g)
-            RETURN count(*) as count
-            """
-            result = tx.run(query, file=csv_path)
-            return result.single()["count"]
-        
-        return self.conn.execute_write(_import)
-    
-    def import_stars_in_relationships(self, csv_path: str) -> int:
-        """Importar relaciones STARS_IN."""
-        def _import(tx):
-            query = """
-            LOAD CSV WITH HEADERS FROM "file:///" + $file as row
-            MATCH (a:Actor {actor_id: row.actor_id})
-            MATCH (m:Movie {movie_id: row.movie_id})
-            CREATE (a)-[:STARS_IN {
-                rol: row.rol,
-                orden: toInteger(row.orden),
-                pantalla_time: toFloat(row.pantalla_time)
-            }]->(m)
-            RETURN count(*) as count
-            """
-            result = tx.run(query, file=csv_path)
-            return result.single()["count"]
-        
-        return self.conn.execute_write(_import)
-    
-    def import_directed_by_relationships(self, csv_path: str) -> int:
-        """Importar relaciones DIRECTED_BY."""
-        def _import(tx):
-            query = """
-            LOAD CSV WITH HEADERS FROM "file:///" + $file as row
-            MATCH (d:Director {director_id: row.director_id})
-            MATCH (m:Movie {movie_id: row.movie_id})
-            CREATE (d)-[:DIRECTED_BY {
-                año_filmacion: toInteger(row.año_filmacion),
-                versión: row.versión,
-                credito_principal: row.credito_principal = 'true'
-            }]->(m)
-            RETURN count(*) as count
-            """
-            result = tx.run(query, file=csv_path)
-            return result.single()["count"]
-        
-        return self.conn.execute_write(_import)
-    
-    def import_wrote_review_relationships(self, csv_path: str) -> int:
-        """Importar relaciones WROTE_REVIEW."""
-        def _import(tx):
-            query = """
-            LOAD CSV WITH HEADERS FROM "file:///" + $file as row
-            MATCH (u:User {user_id: row.user_id})
-            MATCH (m:Movie {movie_id: row.movie_id})
-            CREATE (u)-[:WROTE_REVIEW {
-                fecha: date(row.fecha),
-                editado: row.editado = 'true',
-                spoiler: row.spoiler = 'true'
-            }]->(m)
-            RETURN count(*) as count
-            """
+
             result = tx.run(query, file=csv_path)
             return result.single()["count"]
 
         return self.conn.execute_write(_import)
 
-    def import_follows_relationships(self, csv_path: str) -> int:
-        """Importar relaciones FOLLOWS."""
+    def import_products(self, csv_path: str) -> int:
+        """Importar productos desde CSV."""
+
         def _import(tx):
             query = """
-            LOAD CSV WITH HEADERS FROM "file:///" + $file as row
-            MATCH (u1:User {user_id: row.user_id})
-            MATCH (u2:User {user_id: row.other_user_id})
-            CREATE (u1)-[:FOLLOWS {
-                fecha: date(row.fecha),
-                notificaciones: row.notificaciones = 'true',
-                nivel_interaccion: toInteger(row.nivel_interaccion)
-            }]->(u2)
-            RETURN count(*) as count
+            LOAD CSV WITH HEADERS FROM "file:///" + $file AS row
+            CREATE (:Product {
+                id_producto: toInteger(row.id_producto),
+                nombre: row.nombre,
+                categoria: row.categoria,
+                precio: toFloat(row.precio),
+                perecedero: row.perecedero = 'true',
+                fecha_expiracion: CASE WHEN row.fecha_expiracion = '' THEN null ELSE date(row.fecha_expiracion) END
+            })
+            RETURN count(*) AS count
             """
+
             result = tx.run(query, file=csv_path)
             return result.single()["count"]
-        
+
         return self.conn.execute_write(_import)
-    
-    def import_similar_to_relationships(self, csv_path: str) -> int:
-        """Importar relaciones SIMILAR_TO."""
+
+    def import_orders(self, csv_path: str) -> int:
+        """Importar órdenes de compra desde CSV."""
+
         def _import(tx):
             query = """
-            LOAD CSV WITH HEADERS FROM "file:///" + $file as row
-            MATCH (m1:Movie {movie_id: row.movie_id})
-            MATCH (m2:Movie {movie_id: row.similar_movie_id})
-            CREATE (m1)-[:SIMILAR_TO {
-                similitud: toFloat(row.similitud),
-                mismo_genero: row.mismo_genero = 'true',
-                origen: row.origen
-            }]->(m2)
-            RETURN count(*) as count
+            LOAD CSV WITH HEADERS FROM "file:///" + $file AS row
+            CREATE (:OrderCompra {
+                id_orden: toInteger(row.id_orden),
+                fecha_orden: date(row.fecha_orden),
+                estado: row.estado,
+                total: toFloat(row.total),
+                urgente: row.urgente = 'true',
+                metodo_pago: row.metodo_pago
+            })
+            RETURN count(*) AS count
             """
+
             result = tx.run(query, file=csv_path)
             return result.single()["count"]
-        
+
         return self.conn.execute_write(_import)
-    
+
+    def import_inventories(self, csv_path: str) -> int:
+        """Importar inventarios desde CSV."""
+
+        def _import(tx):
+            query = """
+            LOAD CSV WITH HEADERS FROM "file:///" + $file AS row
+            CREATE (:Inventory {
+                id_inventario: toInteger(row.id_inventario),
+                cantidad: toInteger(row.cantidad),
+                ubicacion: row.ubicacion,
+                capacidad_max: toInteger(row.capacidad_max),
+                temperatura_controlada: row.temperatura_controlada = 'true',
+                fecha_actualizacion: CASE WHEN row.fecha_actualizacion = '' THEN null ELSE date(row.fecha_actualizacion) END
+            })
+            RETURN count(*) AS count
+            """
+
+            result = tx.run(query, file=csv_path)
+            return result.single()["count"]
+
+        return self.conn.execute_write(_import)
+
+    def import_transports(self, csv_path: str) -> int:
+        """Importar medios de transporte desde CSV."""
+
+        def _import(tx):
+            query = """
+            LOAD CSV WITH HEADERS FROM "file:///" + $file AS row
+            CREATE (:Transporte {
+                id_transporte: toInteger(row.id_transporte),
+                tipo: row.tipo,
+                costo: toFloat(row.costo),
+                duracion_dias: toInteger(row.duracion_dias),
+                estado: row.estado,
+                fecha_salida: CASE WHEN row.fecha_salida = '' THEN null ELSE date(row.fecha_salida) END
+            })
+            RETURN count(*) AS count
+            """
+
+            result = tx.run(query, file=csv_path)
+            return result.single()["count"]
+
+        return self.conn.execute_write(_import)
+
+    def import_centers(self, csv_path: str) -> int:
+        """Importar centros de distribución desde CSV."""
+
+        def _import(tx):
+            query = """
+            LOAD CSV WITH HEADERS FROM "file:///" + $file AS row
+            CREATE (:CentroDistribucion {
+                id_centro: toInteger(row.id_centro),
+                nombre: row.nombre,
+                ciudad: row.ciudad,
+                capacidad: toInteger(row.capacidad),
+                activo: row.activo = 'true',
+                tipo: row.tipo
+            })
+            RETURN count(*) AS count
+            """
+
+            result = tx.run(query, file=csv_path)
+            return result.single()["count"]
+
+        return self.conn.execute_write(_import)
+
+    # Relaciones principales
+    def import_supplies(self, csv_path: str) -> int:
+        """Importar relaciones SUMINISTRA (Supplier -> Product)."""
+
+        def _import(tx):
+            query = """
+            LOAD CSV WITH HEADERS FROM "file:///" + $file AS row
+            MATCH (s:Supplier {id_proveedor: toInteger(row.id_proveedor)})
+            MATCH (p:Product {id_producto: toInteger(row.id_producto)})
+            CREATE (s)-[:SUMINISTRA { fecha: CASE WHEN row.fecha = '' THEN null ELSE date(row.fecha) END, costo: toFloat(row.costo) }]->(p)
+            RETURN count(*) AS count
+            """
+
+            result = tx.run(query, file=csv_path)
+            return result.single()["count"]
+
+        return self.conn.execute_write(_import)
+
+    def import_includes(self, csv_path: str) -> int:
+        """Importar relaciones INCLUYE (OrderCompra -> Product)."""
+
+        def _import(tx):
+            query = """
+            LOAD CSV WITH HEADERS FROM "file:///" + $file AS row
+            MATCH (o:OrderCompra {id_orden: toInteger(row.id_orden)})
+            MATCH (p:Product {id_producto: toInteger(row.id_producto)})
+            CREATE (o)-[:INCLUYE { cantidad: toInteger(row.cantidad), precio_unitario: toFloat(row.precio_unitario), subtotal: toFloat(row.subtotal) }]->(p)
+            RETURN count(*) AS count
+            """
+
+            result = tx.run(query, file=csv_path)
+            return result.single()["count"]
+
+        return self.conn.execute_write(_import)
+
+    def import_stored_in(self, csv_path: str) -> int:
+        """Importar relaciones ALMACENADO_EN (Product -> Inventory)."""
+
+        def _import(tx):
+            query = """
+            LOAD CSV WITH HEADERS FROM "file:///" + $file AS row
+            MATCH (p:Product {id_producto: toInteger(row.id_producto)})
+            MATCH (i:Inventory {id_inventario: toInteger(row.id_inventario)})
+            CREATE (p)-[:ALMACENADO_EN { fecha_ingreso: CASE WHEN row.fecha_ingreso = '' THEN null ELSE date(row.fecha_ingreso) END, cantidad: toInteger(row.cantidad), estado: row.estado }]->(i)
+            RETURN count(*) AS count
+            """
+
+            result = tx.run(query, file=csv_path)
+            return result.single()["count"]
+
+        return self.conn.execute_write(_import)
+
+    def import_sent_by(self, csv_path: str) -> int:
+        """Importar relaciones SE_ENVIA_POR (OrderCompra -> Transporte)."""
+
+        def _import(tx):
+            query = """
+            LOAD CSV WITH HEADERS FROM "file:///" + $file AS row
+            MATCH (o:OrderCompra {id_orden: toInteger(row.id_orden)})
+            MATCH (t:Transporte {id_transporte: toInteger(row.id_transporte)})
+            CREATE (o)-[:SE_ENVIA_POR { fecha_envio: CASE WHEN row.fecha_envio = '' THEN null ELSE date(row.fecha_envio) END, costo_envio: toFloat(row.costo_envio), estado: row.estado }]->(t)
+            RETURN count(*) AS count
+            """
+
+            result = tx.run(query, file=csv_path)
+            return result.single()["count"]
+
+        return self.conn.execute_write(_import)
+
+    def import_arrives_departs(self, csv_path: str) -> int:
+        """Importar relaciones LLEGA_A / SALE_DE (Transporte <-> CentroDistribucion).
+
+        CSV debe contener campos: id_transporte, id_centro, fecha_llegada, tiempo_real, fecha_salida, tiempo_estimado, estado
+        Esta función crea relaciones LLEGA_A y SALE_DE según estén presentes las columnas.
+        """
+
+        def _import(tx):
+            query = """
+            LOAD CSV WITH HEADERS FROM "file:///" + $file AS row
+            MATCH (t:Transporte {id_transporte: toInteger(row.id_transporte)})
+            MATCH (c:CentroDistribucion {id_centro: toInteger(row.id_centro)})
+            FOREACH(_ IN CASE WHEN row.fecha_llegada <> '' THEN [1] ELSE [] END |
+                CREATE (t)-[:LLEGA_A { fecha_llegada: date(row.fecha_llegada), tiempo_real: toInteger(row.tiempo_real) }]->(c)
+            )
+            FOREACH(_ IN CASE WHEN row.fecha_salida <> '' THEN [1] ELSE [] END |
+                CREATE (t)-[:SALE_DE { fecha_salida: date(row.fecha_salida), tiempo_estimado: toInteger(row.tiempo_estimado), estado: row.estado }]->(c)
+            )
+            RETURN count(*) AS count
+            """
+
+            result = tx.run(query, file=csv_path)
+            return result.single()["count"]
+
+        return self.conn.execute_write(_import)
+
     def create_indexes(self) -> None:
-        """Crear índices en las propiedades principales."""
+        """Crear índices en las propiedades principales del modelo supply-chain."""
+
         def _create(tx):
             indexes = [
-                "CREATE INDEX user_id FOR (u:User) ON (u.user_id)",
-                "CREATE INDEX user_email FOR (u:User) ON (u.email)",
-                "CREATE INDEX movie_id FOR (m:Movie) ON (m.movie_id)",
-                "CREATE INDEX genre_id FOR (g:Genre) ON (g.genre_id)",
-                "CREATE INDEX actor_id FOR (a:Actor) ON (a.actor_id)",
-                "CREATE INDEX director_id FOR (d:Director) ON (d.director_id)",
+                "CREATE INDEX supplier_id FOR (s:Supplier) ON (s.id_proveedor)",
+                "CREATE INDEX product_id FOR (p:Product) ON (p.id_producto)",
+                "CREATE INDEX order_id FOR (o:OrderCompra) ON (o.id_orden)",
+                "CREATE INDEX inventory_id FOR (i:Inventory) ON (i.id_inventario)",
+                "CREATE INDEX center_id FOR (c:CentroDistribucion) ON (c.id_centro)",
+                "CREATE INDEX transport_id FOR (t:Transporte) ON (t.id_transporte)",
             ]
             for idx in indexes:
                 try:
                     tx.run(idx)
-                except:
-                    pass  # El índice podría ya existir
-        
+                except Exception:
+                    pass
+
         self.conn.execute_write(_create)
-    
+
     def clear_database(self) -> bool:
         """Limpiar la base de datos."""
+
         def _clear(tx):
             tx.run("MATCH (n) DETACH DELETE n")
             return True
-        
+
         return self.conn.execute_write(_clear)
 
 
 if __name__ == "__main__":
-    # Ejemplo de uso
+    # Ejemplo de uso mínimo para generar/insertar datos de ejemplo.
     from .data_generator import DataGenerator
-    
-    # Generar datos
+
     DataGenerator.generate_all("data")
-    
-    # Importar
+
     importer = DataImporter()
     importer.clear_database()
     importer.create_indexes()
-    
-    print("Importando datos...")
-    print(f"Usuarios: {importer.import_users('data/users.csv')}")
-    print(f"Películas: {importer.import_movies('data/movies.csv')}")
-    print(f"Géneros: {importer.import_genres('data/genres.csv')}")
-    print(f"Actores: {importer.import_actors('data/actors.csv')}")
-    print(f"Directores: {importer.import_directors('data/directors.csv')}")
-    print(f"WATCHED: {importer.import_watched_relationships('data/watched.csv')}")
-    print(f"RATED: {importer.import_rated_relationships('data/rated.csv')}")
-    print(f"LIKED: {importer.import_liked_relationships('data/liked.csv')}")
-    print(f"BOOKMARKED: {importer.import_bookmarked_relationships('data/bookmarked.csv')}")
-    print(f"HAS_GENRE: {importer.import_has_genre_relationships('data/has_genre.csv')}")
-    print(f"STARS_IN: {importer.import_stars_in_relationships('data/stars_in.csv')}")
-    print(f"DIRECTED_BY: {importer.import_directed_by_relationships('data/directed_by.csv')}")
-    print(f"WROTE_REVIEW: {importer.import_wrote_review_relationships('data/wrote_review.csv')}")
-    print(f"FOLLOWS: {importer.import_follows_relationships('data/follows.csv')}")
-    print(f"SIMILAR_TO: {importer.import_similar_to_relationships('data/similar_to.csv')}")
+
+    print("Importando datos de cadena de suministros...")
+    print(f"Proveedores: {importer.import_suppliers('data/suppliers.csv')}")
+    print(f"Productos: {importer.import_products('data/products.csv')}")
+    print(f"Órdenes: {importer.import_orders('data/orders.csv')}")
+    print(f"Inventarios: {importer.import_inventories('data/inventories.csv')}")
+    print(f"Centros: {importer.import_centers('data/centers.csv')}")
+    print(f"Transportes: {importer.import_transports('data/transports.csv')}")
+    print("Relaciones: ")
+    print(f"SUMINISTRA: {importer.import_supplies('data/supplies.csv')}")
+    print(f"INCLUYE: {importer.import_includes('data/includes.csv')}")
+    print(f"ALMACENADO_EN: {importer.import_stored_in('data/stored_in.csv')}")
+    print(f"SE_ENVIA_POR: {importer.import_sent_by('data/sent_by.csv')}")
+    print(f"LLEGA/SALE: {importer.import_arrives_departs('data/arrives_departs.csv')}")
     print("\n Importación completada!")

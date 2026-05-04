@@ -1,359 +1,266 @@
-"""Generador de datos de prueba para el proyecto Neo4j.
+"""Generador de datos de prueba para la Cadena de Suministros.
 
-Genera archivos CSV con datos de ejemplo para cargar en la base de datos.
+Genera CSVs compatibles con `src/importer.py` (suppliers, products, orders,
+inventories, centers, transports y relaciones principales).
 """
+
 import csv
 import random
 from datetime import datetime, timedelta
 import os
-from pathlib import Path
 
 
 class DataGenerator:
-    """Genera datos de ejemplo para el sistema de recomendación de películas."""
-    
-    GENRES = [
-        "Acción", "Comedia", "Drama", "Terror", "Ciencia Ficción",
-        "Fantasía", "Romance", "Thriller", "Animación", "Documental",
-        "Aventura", "Misterio", "Musical", "Superhéroes", "Western",
-        "Histórico", "Deportes", "Crimen", "Familia", "Independiente"
+    CATEGORIES = [
+        "Bebidas", "Alimentos", "Lácteos", "Bebidas Energéticas", "Aguas",
+        "Jugos", "Cerveza", "Vinos", "Gaseosas", "Snacks"
     ]
-    
+
     COUNTRIES = [
-        "Estados Unidos", "Reino Unido", "Francia", "Alemania", "Italia",
-        "España", "Japón", "México", "India", "Canadá", "Australia",
-        "Corea del Sur", "Brasil", "Argentina", "China"
+        "Guatemala", "México", "Estados Unidos", "Colombia", "Chile",
+        "Perú", "Argentina", "España", "Brasil"
     ]
-    
-    NAMES_FIRST = [
-        "James", "Mary", "Robert", "Patricia", "Michael", "Jennifer", "William", "Linda",
-        "David", "Barbara", "Richard", "Elizabeth", "Joseph", "Susan", "Thomas", "Jessica",
-        "Charles", "Sarah", "Christopher", "Karen", "Daniel", "Nancy", "Matthew", "Lisa",
-        "Anthony", "Betty", "Donald", "Margaret", "Steven", "Sandra", "Paul", "Ashley",
-        "Andrew", "Kimberly", "Joshua", "Emily", "Kenneth", "Donna", "Kevin", "Michelle"
-    ]
-    
-    NAMES_LAST = [
-        "Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis",
-        "Rodriguez", "Martinez", "Hernandez", "Lopez", "Gonzalez", "Wilson", "Anderson",
-        "Thomas", "Taylor", "Moore", "Jackson", "Martin", "Lee", "Perez", "Thompson",
-        "White", "Harris", "Sanchez", "Clark", "Ramirez", "Lewis", "Robinson", "Walker"
-    ]
-    
-    MOVIE_TITLES = [
-        "El Viaje del Héroe", "Sueños de Medianoche", "Cruzar las Fronteras",
-        "El Último Guardián", "Voces del Futuro", "La Ciudad Perdida",
-        "Más Allá del Horizonte", "La Sombra del Tiempo", "Encuentro Inesperado",
-        "El Código Secreto", "Revolución Digital", "Bajo el Cielo Infinito",
-        "El Espejo de Cristal", "Caminos Convergentes", "La Última Frontera",
-        "Ecos del Pasado", "Luz en la Oscuridad", "El Puente de Esperanza",
-        "Navegando lo Desconocido", "La Fuerza Interior", "Conexión Rota",
-        "El Destino Llama", "Verdades Ocultas", "Renacimiento",
-        "El Precio de la Verdad", "Más Allá de la Realidad"
-    ]
-    
+
     @staticmethod
-    def generate_users(count: int = 500) -> list:
-        """Generar datos de usuarios."""
-        users = []
+    def rand_date(days_back=365*2):
+        return (datetime.now() - timedelta(days=random.randint(0, days_back))).strftime("%Y-%m-%d")
+
+    @staticmethod
+    def generate_suppliers(count: int = 200) -> list:
+        suppliers = []
         for i in range(count):
-            user_id = f"user_{i+1:04d}"
-            email = f"user{i+1}@example.com"
-            first = random.choice(DataGenerator.NAMES_FIRST)
-            last = random.choice(DataGenerator.NAMES_LAST)
-            nombre = f"{first} {last}"
-            edad = random.randint(13, 80)
-            país = random.choice(DataGenerator.COUNTRIES)
-            fecha_registro = (datetime.now() - timedelta(days=random.randint(0, 730))).strftime("%Y-%m-%d")
-            
-            users.append({
-                "user_id": user_id,
-                "email": email,
-                "nombre": nombre,
-                "edad": edad,
-                "país": país,
-                "fechaRegistro": fecha_registro
+            suppliers.append({
+                "id_proveedor": i + 1,
+                "nombre": f"Proveedor_{i+1:04d}",
+                "pais": random.choice(DataGenerator.COUNTRIES),
+                "rating": round(random.uniform(2.5, 5.0), 2),
+                "activo": "true" if random.random() > 0.1 else "false",
+                "categorias": "|".join(random.sample(DataGenerator.CATEGORIES, k=random.randint(1, 3)))
             })
-        return users
-    
+        return suppliers
+
     @staticmethod
-    def generate_movies(count: int = 1000) -> list:
-        """Generar datos de películas."""
-        movies = []
-        title_count = 0
+    def generate_products(count: int = 1500) -> list:
+        products = []
         for i in range(count):
-            movie_id = f"movie_{i+1:05d}"
-            # Usar títulos generados
-            title_num = title_count % len(DataGenerator.MOVIE_TITLES)
-            if title_count >= len(DataGenerator.MOVIE_TITLES):
-                título = f"{DataGenerator.MOVIE_TITLES[title_num]} {title_count // len(DataGenerator.MOVIE_TITLES)}"
-            else:
-                título = DataGenerator.MOVIE_TITLES[title_num]
-            title_count += 1
-            
-            año = random.randint(1990, 2024)
-            duración = random.randint(80, 180)
-            presupuesto = round(random.uniform(10, 300), 2)
-            descripción = f"Una película de {año} con duración de {duración} minutos."
-            
-            movies.append({
-                "movie_id": movie_id,
-                "título": título,
-                "año": año,
-                "duración": duración,
-                "presupuesto": presupuesto,
-                "descripción": descripción
+            perecedero = random.random() > 0.6
+            fecha_exp = DataGenerator.rand_date(365) if perecedero else ""
+            products.append({
+                "id_producto": i + 1,
+                "nombre": f"Producto_{i+1:05d}",
+                "categoria": random.choice(DataGenerator.CATEGORIES),
+                "precio": round(random.uniform(0.5, 50.0), 2),
+                "perecedero": "true" if perecedero else "false",
+                "fecha_expiracion": fecha_exp
             })
-        return movies
-    
+        return products
+
     @staticmethod
-    def generate_genres() -> list:
-        """Generar datos de géneros."""
-        genres = []
-        for i, genre_name in enumerate(DataGenerator.GENRES):
-            genre_id = f"genre_{i+1:02d}"
-            descripción = f"Películas del género {genre_name}"
-            películas_totales = random.randint(20, 200)
-            popularidad = round(random.uniform(3.0, 9.5), 1)
-            
-            genres.append({
-                "genre_id": genre_id,
-                "nombre": genre_name,
-                "descripción": descripción,
-                "películas_totales": películas_totales,
-                "popularidad": popularidad
-            })
-        return genres
-    
-    @staticmethod
-    def generate_actors(count: int = 2500) -> list:
-        """Generar datos de actores."""
-        actors = []
+    def generate_centers(count: int = 50) -> list:
+        centers = []
         for i in range(count):
-            actor_id = f"actor_{i+1:05d}"
-            first = random.choice(DataGenerator.NAMES_FIRST)
-            last = random.choice(DataGenerator.NAMES_LAST)
-            nombre = f"{first} {last}"
-            fecha_nac = (datetime.now() - timedelta(days=random.randint(365*20, 365*80))).strftime("%Y-%m-%d")
-            nacionalidad = random.choice(DataGenerator.COUNTRIES)
-            biografía = f"Actor/Actriz nacido en {nacionalidad}."
-            premios = random.sample(["Oscar", "BAFTA", "Golden Globe", "Emmy", "Palma de Oro"], 
-                                   k=random.randint(0, 3)) if random.random() > 0.7 else []
-            
-            actors.append({
-                "actor_id": actor_id,
-                "nombre": nombre,
-                "fechaNacimiento": fecha_nac,
-                "nacionalidad": nacionalidad,
-                "biografía": biografía,
-                "premios": "|".join(premios) if premios else ""
+            centers.append({
+                "id_centro": i + 1,
+                "nombre": f"Centro_{i+1:03d}",
+                "ciudad": f"Ciudad_{random.randint(1,200)}",
+                "capacidad": random.randint(1000, 100000),
+                "activo": "true" if random.random() > 0.05 else "false",
+                "tipo": random.choice(["Regional", "Local", "Nacional"])
             })
-        return actors
-    
+        return centers
+
     @staticmethod
-    def generate_directors(count: int = 500) -> list:
-        """Generar datos de directores."""
-        directors = []
+    def generate_inventories(count: int = 500) -> list:
+        inventories = []
         for i in range(count):
-            director_id = f"director_{i+1:04d}"
-            first = random.choice(DataGenerator.NAMES_FIRST)
-            last = random.choice(DataGenerator.NAMES_LAST)
-            nombre = f"{first} {last}"
-            fecha_nac = (datetime.now() - timedelta(days=random.randint(365*20, 365*80))).strftime("%Y-%m-%d")
-            nacionalidad = random.choice(DataGenerator.COUNTRIES)
-            películas_dirigidas = random.randint(1, 50)
-            bio = f"Director/Directora de {nacionalidad} con {películas_dirigidas} películas."
-            
-            directors.append({
-                "director_id": director_id,
-                "nombre": nombre,
-                "fechaNacimiento": fecha_nac,
-                "nacionalidad": nacionalidad,
-                "películas_dirigidas": películas_dirigidas,
-                "bio": bio
+            inventories.append({
+                "id_inventario": i + 1,
+                "cantidad": random.randint(0, 2000),
+                "ubicacion": f"Estante_{random.randint(1,500)}",
+                "capacidad_max": random.randint(500, 5000),
+                "temperatura_controlada": "true" if random.random() > 0.8 else "false",
+                "fecha_actualizacion": DataGenerator.rand_date(30)
             })
-        return directors
-    
+        return inventories
+
     @staticmethod
-    def generate_relationships(users: list, movies: list, genres: list, actors: list, directors: list) -> dict:
-        """Generar relaciones entre nodos."""
-        relationships = {
-            "watched": [],
-            "rated": [],
-            "liked": [],
-            "bookmarked": [],
-            "has_genre": [],
-            "stars_in": [],
-            "directed_by": [],
-            "wrote_review": [],
-            "follows": [],
-            "similar_to": []
+    def generate_transports(count: int = 300) -> list:
+        transports = []
+        for i in range(count):
+            transports.append({
+                "id_transporte": i + 1,
+                "tipo": random.choice(["Camión", "Barco", "Avión", "Tren"]),
+                "costo": round(random.uniform(50, 5000), 2),
+                "duracion_dias": random.randint(1, 15),
+                "estado": random.choice(["En Ruta", "En Bodega", "Entregado"]),
+                "fecha_salida": DataGenerator.rand_date(30)
+            })
+        return transports
+
+    @staticmethod
+    def generate_orders(count: int = 2000, products=None) -> list:
+        orders = []
+        for i in range(count):
+            total = 0.0
+            urgente = random.random() > 0.9
+            orders.append({
+                "id_orden": i + 1,
+                "fecha_orden": DataGenerator.rand_date(90),
+                "estado": random.choice(["PENDIENTE", "COMPLETADA", "CANCELADA"]),
+                "total": round(total, 2),
+                "urgente": "true" if urgente else "false",
+                "metodo_pago": random.choice(["Transferencia", "Crédito", "Contado"]) 
+            })
+        return orders
+
+    @staticmethod
+    def generate_relations(suppliers, products, orders, inventories, centers, transports) -> dict:
+        supplies = []
+        includes = []
+        stored_in = []
+        sent_by = []
+        arrives = []
+        manages = []
+        destination = []
+
+        # SUPPLIES: each supplier supplies several products
+        for s in suppliers:
+            for p in random.sample(products, k=random.randint(5, 30)):
+                supplies.append({
+                    "id_proveedor": s["id_proveedor"],
+                    "id_producto": p["id_producto"],
+                    "fecha": DataGenerator.rand_date(365),
+                    "costo": round(random.uniform(0.1, p["precio"] * 0.8), 2)
+                })
+
+        # INCLUDES: orders include 1-10 products
+        for o in orders:
+            for p in random.sample(products, k=random.randint(1, 6)):
+                cantidad = random.randint(1, 100)
+                precio_unitario = p["precio"]
+                includes.append({
+                    "id_orden": o["id_orden"],
+                    "id_producto": p["id_producto"],
+                    "cantidad": cantidad,
+                    "precio_unitario": precio_unitario,
+                    "subtotal": round(cantidad * precio_unitario, 2)
+                })
+
+        # STORED_IN: map some products to inventories
+        for p in random.sample(products, k=min(len(products), len(inventories) * 3)):
+            inv = random.choice(inventories)
+            stored_in.append({
+                "id_producto": p["id_producto"],
+                "id_inventario": inv["id_inventario"],
+                "fecha_ingreso": DataGenerator.rand_date(30),
+                "cantidad": random.randint(1, inv["capacidad_max"]),
+                "estado": random.choice(["Bueno", "Dañado", "Por Revisar"]) 
+            })
+
+        # SENT_BY: some orders assigned to transports
+        for o in random.sample(orders, k=int(len(orders) * 0.7)):
+            t = random.choice(transports)
+            sent_by.append({
+                "id_orden": o["id_orden"],
+                "id_transporte": t["id_transporte"],
+                "fecha_envio": DataGenerator.rand_date(30),
+                "costo_envio": round(random.uniform(20, 1000), 2),
+                "estado": random.choice(["En Ruta", "Entregado", "Programado"]) 
+            })
+
+        # ARRIVES/DEPARTS: transport events with centers
+        for t in transports:
+            c = random.choice(centers)
+            arrives.append({
+                "id_transporte": t["id_transporte"],
+                "id_centro": c["id_centro"],
+                "fecha_llegada": DataGenerator.rand_date(30),
+                "tiempo_real": random.randint(1, 72),
+                "fecha_salida": DataGenerator.rand_date(30),
+                "tiempo_estimado": random.randint(1, 72),
+                "estado": random.choice(["En Ruta", "En Bodega", "Entregado"]) 
+            })
+
+        # MANAGES: centers manage inventories
+        for inv in inventories:
+            c = random.choice(centers)
+            manages.append({
+                "id_centro": c["id_centro"],
+                "id_inventario": inv["id_inventario"],
+                "fecha": DataGenerator.rand_date(30),
+                "responsable": f"Encargado_{random.randint(1,100)}",
+                "estado": random.choice(["Activo", "Reubicado"]) 
+            })
+
+        # DESTINATION: orders get assigned to distribution centers
+        for o in orders:
+            c = random.choice(centers)
+            destination.append({
+                "id_orden": o["id_orden"],
+                "id_centro": c["id_centro"],
+                "fecha_entrega": DataGenerator.rand_date(30),
+                "prioridad": random.randint(1, 5),
+                "estado": random.choice(["Programado", "Entregado", "Retrasado"]) 
+            })
+
+        return {
+            "supplies": supplies,
+            "includes": includes,
+            "stored_in": stored_in,
+            "sent_by": sent_by,
+            "arrives": arrives,
+            "manages": manages,
+            "destination": destination
         }
-        
-        # WATCHED: Usuarios ven películas (30% de usuarios x películas)
-        for user in random.sample(users, k=int(len(users) * 0.8)):
-            for movie in random.sample(movies, k=random.randint(5, 50)):
-                fecha = (datetime.now() - timedelta(days=random.randint(0, 365))).strftime("%Y-%m-%d")
-                duracion_visto = random.randint(int(movie["duración"]*0.7), movie["duración"])
-                completado = duracion_visto >= int(movie["duración"] * 0.9)
-                relationships["watched"].append({
-                    "user_id": user["user_id"],
-                    "movie_id": movie["movie_id"],
-                    "fecha": fecha,
-                    "duracion_visto": duracion_visto,
-                    "completado": "true" if completado else "false"
-                })
-        
-        # RATED: Usuarios califican películas (30% de usuarios x películas vistas)
-        for rel in random.sample(relationships["watched"], k=int(len(relationships["watched"]) * 0.4)):
-            fecha = rel["fecha"]
-            puntuacion = random.randint(1, 10)
-            relationships["rated"].append({
-                "user_id": rel["user_id"],
-                "movie_id": rel["movie_id"],
-                "puntuacion": puntuacion,
-                "fecha": fecha,
-                "útil": "true" if random.random() > 0.7 else "false"
-            })
-        
-        # LIKED: Usuarios marcan como favoritas
-        for rel in random.sample(relationships["rated"], k=int(len(relationships["rated"]) * 0.3)):
-            relationships["liked"].append({
-                "user_id": rel["user_id"],
-                "movie_id": rel["movie_id"],
-                "fecha": rel["fecha"],
-                "motivación": random.choice(["Excelente actuación", "Trama emocionante", "Música increíble"]),
-                "intensidad": random.randint(1, 5)
-            })
-        
-        # BOOKMARKED: Usuarios agregan a watchlist
-        for user in random.sample(users, k=int(len(users) * 0.6)):
-            for movie in random.sample(movies, k=random.randint(3, 20)):
-                relationships["bookmarked"].append({
-                    "user_id": user["user_id"],
-                    "movie_id": movie["movie_id"],
-                    "fecha": (datetime.now() - timedelta(days=random.randint(0, 30))).strftime("%Y-%m-%d"),
-                    "prioridad": random.randint(1, 5),
-                    "recordatorio": "true" if random.random() > 0.5 else "false"
-                })
-        
-        # HAS_GENRE: Películas tienen géneros (cada película 1-3 géneros)
-        for movie in movies:
-            for genre in random.sample(genres, k=random.randint(1, 4)):
-                relationships["has_genre"].append({
-                    "movie_id": movie["movie_id"],
-                    "genre_id": genre["genre_id"],
-                    "es_principal": "true" if random.random() > 0.6 else "false",
-                    "peso": round(random.uniform(0.5, 1.0), 2),
-                    "origen": random.choice(["curado", "usuario", "automatico"])
-                })
-        
-        # STARS_IN: Actores en películas (cada película 5-20 actores)
-        for movie in movies:
-            for actor in random.sample(actors, k=random.randint(5, 20)):
-                relationships["stars_in"].append({
-                    "actor_id": actor["actor_id"],
-                    "movie_id": movie["movie_id"],
-                    "rol": random.choice(["Protagonista", "Coprotagonista", "Secundario"]),
-                    "orden": random.randint(1, 20),
-                    "pantalla_time": round(random.uniform(5, 180), 1)
-                })
-        
-        # DIRECTED_BY: Directores dirigen películas
-        for movie in movies:
-            director = random.choice(directors)
-            relationships["directed_by"].append({
-                "director_id": director["director_id"],
-                "movie_id": movie["movie_id"],
-                "año_filmacion": movie["año"],
-                "versión": "Original",
-                "credito_principal": "true" if random.random() > 0.1 else "false"
-            })
-        
-        # WROTE_REVIEW: Usuarios escriben reseñas (20% de rated)
-        for rel in random.sample(relationships["rated"], k=int(len(relationships["rated"]) * 0.2)):
-            relationships["wrote_review"].append({
-                "user_id": rel["user_id"],
-                "movie_id": rel["movie_id"],
-                "fecha": rel["fecha"],
-                "editado": "false",
-                "spoiler": "true" if random.random() > 0.85 else "false"
-            })
-        
-        # FOLLOWS: Usuarios siguen a otros usuarios
-        for user in random.sample(users, k=int(len(users) * 0.5)):
-            for other_user in random.sample(users, k=random.randint(2, 15)):
-                if user["user_id"] != other_user["user_id"]:
-                    relationships["follows"].append({
-                        "user_id": user["user_id"],
-                        "other_user_id": other_user["user_id"],
-                        "fecha": (datetime.now() - timedelta(days=random.randint(0, 365))).strftime("%Y-%m-%d"),
-                        "notificaciones": "true" if random.random() > 0.5 else "false",
-                        "nivel_interaccion": random.randint(1, 5)
-                    })
-        
-        # SIMILAR_TO: Películas similares
-        for i, movie1 in enumerate(random.sample(movies, k=int(len(movies) * 0.3))):
-            for movie2 in random.sample([m for m in movies if m != movie1], k=random.randint(2, 5)):
-                relationships["similar_to"].append({
-                    "movie_id": movie1["movie_id"],
-                    "similar_movie_id": movie2["movie_id"],
-                    "similitud": round(random.uniform(0.6, 1.0), 2),
-                    "mismo_genero": "true" if random.random() > 0.4 else "false",
-                    "origen": random.choice(["metadata", "co-views", "manual"])
-                })
-        
-        return relationships
-    
+
     @staticmethod
     def save_to_csv(data: list, filename: str, data_dir: str = "data"):
-        """Guardar datos en archivo CSV."""
         os.makedirs(data_dir, exist_ok=True)
         filepath = os.path.join(data_dir, filename)
-        
+
         if not data:
+            # create an empty file with headerless content if necessary
+            open(filepath, 'w', encoding='utf-8').close()
             return filepath
-        
-        keys = data[0].keys()
+
+        keys = list(data[0].keys())
         with open(filepath, 'w', newline='', encoding='utf-8') as f:
             writer = csv.DictWriter(f, fieldnames=keys)
             writer.writeheader()
             writer.writerows(data)
-        
+
         print(f"Generado: {filepath} ({len(data)} registros)")
         return filepath
-    
+
     @staticmethod
     def generate_all(data_dir: str = "data"):
-        """Generar todos los datos."""
-        print("Generando datos de prueba...")
-        
-        # Generar datos
-        users = DataGenerator.generate_users(1000)
-        movies = DataGenerator.generate_movies(1500)
-        genres = DataGenerator.generate_genres()
-        actors = DataGenerator.generate_actors(3000)
-        directors = DataGenerator.generate_directors(800)
-        
-        # Guardar
-        DataGenerator.save_to_csv(users, "users.csv", data_dir)
-        DataGenerator.save_to_csv(movies, "movies.csv", data_dir)
-        DataGenerator.save_to_csv(genres, "genres.csv", data_dir)
-        DataGenerator.save_to_csv(actors, "actors.csv", data_dir)
-        DataGenerator.save_to_csv(directors, "directors.csv", data_dir)
-        
-        # Relaciones
-        rels = DataGenerator.generate_relationships(users, movies, genres, actors, directors)
-        for rel_type, rel_data in rels.items():
-            DataGenerator.save_to_csv(rel_data, f"{rel_type}.csv", data_dir)
-        
-        total_nodes = len(users) + len(movies) + len(genres) + len(actors) + len(directors)
+        print("Generando datos de cadena de suministros...")
+
+        suppliers = DataGenerator.generate_suppliers(200)
+        products = DataGenerator.generate_products(1500)
+        centers = DataGenerator.generate_centers(50)
+        inventories = DataGenerator.generate_inventories(500)
+        transports = DataGenerator.generate_transports(300)
+        orders = DataGenerator.generate_orders(2000, products)
+
+        DataGenerator.save_to_csv(suppliers, "suppliers.csv", data_dir)
+        DataGenerator.save_to_csv(products, "products.csv", data_dir)
+        DataGenerator.save_to_csv(centers, "centers.csv", data_dir)
+        DataGenerator.save_to_csv(inventories, "inventories.csv", data_dir)
+        DataGenerator.save_to_csv(transports, "transports.csv", data_dir)
+        DataGenerator.save_to_csv(orders, "orders.csv", data_dir)
+
+        rels = DataGenerator.generate_relations(suppliers, products, orders, inventories, centers, transports)
+        for name, rows in rels.items():
+            DataGenerator.save_to_csv(rows, f"{name}.csv", data_dir)
+
+        total_nodes = len(suppliers) + len(products) + len(centers) + len(inventories) + len(transports) + len(orders)
         total_rels = sum(len(v) for v in rels.values())
-        
+
         print(f"\n Generación completada!")
         print(f"   Total de nodos: {total_nodes:,}")
         print(f"   Total de relaciones: {total_rels:,}")
-        
+
         return data_dir
 
 

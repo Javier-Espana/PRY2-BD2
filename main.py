@@ -10,9 +10,9 @@ import argparse
 
 
 def run_init(clear: bool) -> None:
-    from src.app import MovieRecommendationApp
+    from src.app import SupplyChainApp
 
-    app = MovieRecommendationApp()
+    app = SupplyChainApp()
     try:
         app.initialize_database(clear=clear)
     except RuntimeError as exc:

@@ -1,98 +1,97 @@
-"""Definición del esquema del grafo.
+"""Esquema del grafo para la Cadena de Suministros.
 
-Este archivo contiene definiciones de constantes para etiquetas, 
-relaciones y propiedades del grafo.
+Este módulo define etiquetas (labels), tipos de relaciones y propiedades
+consistentes con el documento de planteamiento (Proveedor, Producto,
+OrdenCompra, Inventario, CentroDistribucion, Transporte).
 """
 
-# Etiquetas de Nodos
-LABEL_USER = "User"
-LABEL_MOVIE = "Movie"
-LABEL_GENRE = "Genre"
-LABEL_ACTOR = "Actor"
-LABEL_DIRECTOR = "Director"
+# Etiquetas de nodos
+LABEL_SUPPLIER = "Supplier"
+LABEL_PRODUCT = "Product"
+LABEL_ORDER = "OrderCompra"
+LABEL_INVENTORY = "Inventory"
+LABEL_DISTRIBUTION_CENTER = "CentroDistribucion"
+LABEL_TRANSPORT = "Transporte"
 
-# Tipos de Relaciones
-REL_WATCHED = "WATCHED"
-REL_RATED = "RATED"
-REL_LIKED = "LIKED"
-REL_BOOKMARKED = "BOOKMARKED"
-REL_HAS_GENRE = "HAS_GENRE"
-REL_STARS_IN = "STARS_IN"
-REL_DIRECTED_BY = "DIRECTED_BY"
-REL_WROTE_REVIEW = "WROTE_REVIEW"
-REL_FOLLOWS = "FOLLOWS"
-REL_SIMILAR_TO = "SIMILAR_TO"
+# Tipos de relaciones
+REL_SUPPLIES = "SUMINISTRA"
+REL_RECEIVES_ORDER = "RECIBE_ORDEN"
+REL_INCLUDES = "INCLUYE"
+REL_SENT_BY = "SE_ENVIA_POR"
+REL_STORED_IN = "ALMACENADO_EN"
+REL_LOCATED_IN = "UBICADO_EN"
+REL_ARRIVES_AT = "LLEGA_A"
+REL_DEPARTS_FROM = "SALE_DE"
+REL_MANAGES = "GESTIONA"
+REL_REQUIRES = "REQUIERE"
+REL_DESTINATION = "DESTINO"
 
-# Propiedades de Usuarios
-PROP_USER_ID = "user_id"
-PROP_USER_EMAIL = "email"
-PROP_USER_NOMBRE = "nombre"
-PROP_USER_EDAD = "edad"
-PROP_USER_PAIS = "país"
-PROP_USER_FECHA_REGISTRO = "fechaRegistro"
+# Propiedades de Supplier
+PROP_SUPPLIER_ID = "id_proveedor"
+PROP_SUPPLIER_NOMBRE = "nombre"
+PROP_SUPPLIER_PAIS = "pais"
+PROP_SUPPLIER_RATING = "rating"
+PROP_SUPPLIER_ACTIVO = "activo"
+PROP_SUPPLIER_CATEGORIAS = "categorias"
 
-# Propiedades de Películas
-PROP_MOVIE_ID = "movie_id"
-PROP_MOVIE_TITULO = "título"
-PROP_MOVIE_AÑO = "año"
-PROP_MOVIE_DURACION = "duración"
-PROP_MOVIE_PRESUPUESTO = "presupuesto"
-PROP_MOVIE_DESCRIPCION = "descripción"
+# Propiedades de Product
+PROP_PRODUCT_ID = "id_producto"
+PROP_PRODUCT_NOMBRE = "nombre"
+PROP_PRODUCT_CATEGORIA = "categoria"
+PROP_PRODUCT_PRECIO = "precio"
+PROP_PRODUCT_PERECEDERO = "perecedero"
+PROP_PRODUCT_FECHA_EXPIRACION = "fecha_expiracion"
 
-# Propiedades de Géneros
-PROP_GENRE_ID = "genre_id"
-PROP_GENRE_NOMBRE = "nombre"
-PROP_GENRE_DESCRIPCION = "descripción"
-PROP_GENRE_TOTALES = "películas_totales"
-PROP_GENRE_POPULARIDAD = "popularidad"
+# Propiedades de OrderCompra
+PROP_ORDER_ID = "id_orden"
+PROP_ORDER_FECHA = "fecha_orden"
+PROP_ORDER_ESTADO = "estado"
+PROP_ORDER_TOTAL = "total"
+PROP_ORDER_URGENTE = "urgente"
+PROP_ORDER_METODO_PAGO = "metodo_pago"
 
-# Propiedades de Actores
-PROP_ACTOR_ID = "actor_id"
-PROP_ACTOR_NOMBRE = "nombre"
-PROP_ACTOR_FECHA_NAC = "fechaNacimiento"
-PROP_ACTOR_NACIONALIDAD = "nacionalidad"
-PROP_ACTOR_BIO = "biografía"
-PROP_ACTOR_PREMIOS = "premios"
+# Propiedades de Inventory
+PROP_INVENTORY_ID = "id_inventario"
+PROP_INVENTORY_CANTIDAD = "cantidad"
+PROP_INVENTORY_UBICACION = "ubicacion"
+PROP_INVENTORY_CAPACIDAD_MAX = "capacidad_max"
+PROP_INVENTORY_TEMPERATURA_CONTROLADA = "temperatura_controlada"
+PROP_INVENTORY_FECHA_ACTUALIZACION = "fecha_actualizacion"
 
-# Propiedades de Directores
-PROP_DIRECTOR_ID = "director_id"
-PROP_DIRECTOR_NOMBRE = "nombre"
-PROP_DIRECTOR_FECHA_NAC = "fechaNacimiento"
-PROP_DIRECTOR_NACIONALIDAD = "nacionalidad"
-PROP_DIRECTOR_PELICULAS = "películas_dirigidas"
-PROP_DIRECTOR_BIO = "bio"
+# Propiedades de Transporte
+PROP_TRANSPORT_ID = "id_transporte"
+PROP_TRANSPORT_TIPO = "tipo"
+PROP_TRANSPORT_COSTO = "costo"
+PROP_TRANSPORT_DURACION_DIAS = "duracion_dias"
+PROP_TRANSPORT_ESTADO = "estado"
+PROP_TRANSPORT_FECHA_SALIDA = "fecha_salida"
 
-# Propiedades de Relaciones
+# Propiedades de Centro de Distribucion
+PROP_CENTER_ID = "id_centro"
+PROP_CENTER_NOMBRE = "nombre"
+PROP_CENTER_CIUDAD = "ciudad"
+PROP_CENTER_CAPACIDAD = "capacidad"
+PROP_CENTER_ACTIVO = "activo"
+PROP_CENTER_TIPO = "tipo"
+
+# Propiedades usadas en relaciones
 PROP_REL_FECHA = "fecha"
-PROP_REL_DURACION = "duracion_visto"
-PROP_REL_COMPLETADO = "completado"
-PROP_REL_PUNTUACION = "puntuacion"
-PROP_REL_UTIL = "útil"
-PROP_REL_MOTIVACION = "motivación"
-PROP_REL_INTENSIDAD = "intensidad"
+PROP_REL_COSTO = "costo"
+PROP_REL_CANTIDAD = "cantidad"
 PROP_REL_PRIORIDAD = "prioridad"
-PROP_REL_RECORDATORIO = "recordatorio"
-PROP_REL_ES_PRINCIPAL = "es_principal"
-PROP_REL_PESO = "peso"
-PROP_REL_ORIGEN = "origen"
-PROP_REL_ROL = "rol"
-PROP_REL_ORDEN = "orden"
-PROP_REL_PANTALLA_TIME = "pantalla_time"
-PROP_REL_VERSION = "versión"
-PROP_REL_CREDITO_PRINCIPAL = "credito_principal"
-PROP_REL_EDITADO = "editado"
-PROP_REL_SPOILER = "spoiler"
-PROP_REL_NOTIFICACIONES = "notificaciones"
-PROP_REL_NIVEL_INTERACCION = "nivel_interaccion"
-PROP_REL_SIMILITUD = "similitud"
-PROP_REL_MISMO_GENERO = "mismo_genero"
+PROP_REL_ESTADO = "estado"
+PROP_REL_FECHA_LLEGADA = "fecha_llegada"
+PROP_REL_TIEMPO_REAL = "tiempo_real"
+PROP_REL_TIEMPO_ESTIMADO = "tiempo_estimado"
+PROP_REL_RESPONSABLE = "responsable"
+PROP_REL_TIPO_REQUERIDO = "tipo_requerido"
+PROP_REL_TEMPERATURA = "temperatura"
 
 # Índices recomendados
 INDEXES = [
-    (LABEL_USER, PROP_USER_ID),
-    (LABEL_USER, PROP_USER_EMAIL),
-    (LABEL_MOVIE, PROP_MOVIE_ID),
-    (LABEL_GENRE, PROP_GENRE_ID),
-    (LABEL_ACTOR, PROP_ACTOR_ID),
-    (LABEL_DIRECTOR, PROP_DIRECTOR_ID),
+    (LABEL_SUPPLIER, PROP_SUPPLIER_ID),
+    (LABEL_PRODUCT, PROP_PRODUCT_ID),
+    (LABEL_ORDER, PROP_ORDER_ID),
+    (LABEL_INVENTORY, PROP_INVENTORY_ID),
+    (LABEL_DISTRIBUTION_CENTER, PROP_CENTER_ID),
 ]

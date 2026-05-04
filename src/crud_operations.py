@@ -1,3 +1,4 @@
+
 """Operaciones CRUD para nodos y relaciones.
 
 Implementa todas las operaciones requeridas por la rúbrica de evaluación.
@@ -41,21 +42,29 @@ class CrudOperations:
         """Crear un usuario."""
         return self.create_node_single_label(schema.LABEL_USER, user_data)
     
-    def create_movie(self, movie_data: Dict) -> Dict:
-        """Crear una película."""
-        return self.create_node_single_label(schema.LABEL_MOVIE, movie_data)
-    
-    def create_genre(self, genre_data: Dict) -> Dict:
-        """Crear un género."""
-        return self.create_node_single_label(schema.LABEL_GENRE, genre_data)
-    
-    def create_actor(self, actor_data: Dict) -> Dict:
-        """Crear un actor."""
-        return self.create_node_single_label(schema.LABEL_ACTOR, actor_data)
-    
-    def create_director(self, director_data: Dict) -> Dict:
-        """Crear un director."""
-        return self.create_node_single_label(schema.LABEL_DIRECTOR, director_data)
+    def create_supplier(self, supplier_data: Dict) -> Dict:
+        """Crear un proveedor (Supplier)."""
+        return self.create_node_single_label(schema.LABEL_SUPPLIER, supplier_data)
+
+    def create_product(self, product_data: Dict) -> Dict:
+        """Crear un producto (Product)."""
+        return self.create_node_single_label(schema.LABEL_PRODUCT, product_data)
+
+    def create_center(self, center_data: Dict) -> Dict:
+        """Crear un centro de distribución (CentroDistribucion)."""
+        return self.create_node_single_label(schema.LABEL_DISTRIBUTION_CENTER, center_data)
+
+    def create_inventory(self, inventory_data: Dict) -> Dict:
+        """Crear un inventario (Inventory)."""
+        return self.create_node_single_label(schema.LABEL_INVENTORY, inventory_data)
+
+    def create_transport(self, transport_data: Dict) -> Dict:
+        """Crear un transporte (Transporte)."""
+        return self.create_node_single_label(schema.LABEL_TRANSPORT, transport_data)
+
+    def create_order(self, order_data: Dict) -> Dict:
+        """Crear una orden de compra (OrderCompra)."""
+        return self.create_node_single_label(schema.LABEL_ORDER, order_data)
     
     # ============ NODOS - LECTURA ============
     
