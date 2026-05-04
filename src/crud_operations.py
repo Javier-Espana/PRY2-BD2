@@ -204,10 +204,10 @@ class CrudOperations:
                           rel_type: str, properties: Dict = None) -> Dict:
         """Crear una relación entre dos nodos existentes con propiedades."""
         def _create(tx):
-            properties = properties or {}
+            props = properties or {}
             prop_string = ""
-            if properties:
-                prop_string = "{" + ", ".join([f"{k}: ${k}" for k in properties.keys()]) + "}"
+            if props:
+                prop_string = "{" + ", ".join([f"{k}: ${k}" for k in props.keys()]) + "}"
             
             query = f"""MATCH (a:{from_label} {{{from_id_prop}: ${from_id_prop}}}),
                              (b:{to_label} {{{to_id_prop}: ${to_id_prop}}})
@@ -217,7 +217,7 @@ class CrudOperations:
             params = {
                 from_id_prop: from_id,
                 to_id_prop: to_id,
-                **properties
+                **props
             }
             result = tx.run(query, **params)
             return result.single()[0] if result else None

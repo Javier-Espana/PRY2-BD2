@@ -236,10 +236,11 @@ class DataGenerator:
     def generate_all(data_dir: str = "data"):
         print("Generando datos de cadena de suministros...")
 
-        suppliers = DataGenerator.generate_suppliers(200)
-        products = DataGenerator.generate_products(1500)
-        centers = DataGenerator.generate_centers(50)
-        inventories = DataGenerator.generate_inventories(500)
+        # Ajuste de tamaños para superar 5.000 nodos totales
+        suppliers = DataGenerator.generate_suppliers(250)
+        products = DataGenerator.generate_products(2000)
+        centers = DataGenerator.generate_centers(60)
+        inventories = DataGenerator.generate_inventories(800)
         transports = DataGenerator.generate_transports(300)
         orders = DataGenerator.generate_orders(2000, products)
 

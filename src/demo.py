@@ -4,7 +4,7 @@ Ejecuta consultas y operaciones CRUD básicas del sistema de cadena de suministr
 """
 
 from .app import SupplyChainApp
-from .queries import SupplyChainQueries
+from .queries import CypherQueries
 
 
 def main():
