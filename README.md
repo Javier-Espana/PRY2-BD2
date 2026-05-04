@@ -27,21 +27,23 @@ Un sistema que permite a usuarios descubrir películas basándose en:
 
 ```
 PRY2-BD2/
-├── src/neo4j_project/
-│   ├── app.py                    # Aplicación principal
+├── src/
+│   ├── app.py                    # Aplicacion principal
+│   ├── api.py                    # API REST
+│   ├── demo.py                   # Demo CLI
 │   ├── schema.py                 # Definiciones de esquema
 │   ├── crud_operations.py        # Operaciones CRUD
 │   ├── queries.py                # Consultas Cypher
-│   ├── recommendation.py         # Motor de recomendación
+│   ├── recommendation.py         # Motor de recomendacion
 │   ├── data_generator.py         # Generador de datos
 │   ├── importer.py               # Importador CSV
-│   ├── neo4j_conn.py            # Conexión a BD
-│   └── config.py                 # Configuración
+│   ├── neo4j_conn.py             # Conexion a BD
+│   └── config.py                 # Configuracion
 ├── docs/
 │   ├── modelo_datos.tex          # Documento LaTeX con modelo
 │   └── Proyecto 2 - Neo4j.pdf     # Instrucciones del proyecto
 ├── tests/
-├── api.py                        # API Flask
+├── main.py                       # Punto de entrada unico
 ├── requirements.txt
 └── README.md
 ```
@@ -51,7 +53,7 @@ PRY2-BD2/
 ### 1. Instalación
 
 ```bash
-python3 -m venv venv
+python3 -m venv .venv
 source venv/bin/activate
 pip install -r requirements.txt
 ```
@@ -68,14 +70,14 @@ NEO4J_PASSWORD=your_password
 ### 3. Ejecutar la Aplicación
 
 ```bash
-# Opción 1: Aplicación principal con inicialización
-python -m src.neo4j_project.app
+# Opcion 1: Inicializar base de datos
+python main.py --mode init
 
-# Opción 2: API REST
-python api.py
+# Opcion 2: API REST
+python main.py --mode api
 
-# Opción 3: Solo generar datos
-python -m src.neo4j_project.data_generator
+# Opcion 3: Demo completa
+python main.py --mode demo
 ```
 
 ## Requisitos de la Rúbrica
@@ -169,7 +171,7 @@ Total: **6,000+ nodos** (cumple mínimo 5,000)
 ## Ejemplo de Uso
 
 ```python
-from src.neo4j_project.app import MovieRecommendationApp
+from src.app import MovieRecommendationApp
 
 app = MovieRecommendationApp()
 app.initialize_database()
@@ -192,9 +194,9 @@ Para verificar que todo está funcionando:
 
 ```bash
 # 1. Inicializar
-python -m src.neo4j_project.app
+python main.py --mode init
 
-# 2. Verificar estadísticas
+# 2. Verificar estadisticas
 # - Total nodos: ~6,000
 # - Relaciones: ~70,000+
 

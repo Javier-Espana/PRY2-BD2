@@ -1,19 +1,19 @@
-"""API Flask para el sistema de recomendación de películas.
+"""API Flask para el sistema de recomendacion de peliculas.
 
 Proporciona endpoints REST para acceder a todas las funcionalidades.
 """
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from src.neo4j_project.app import MovieRecommendationApp
+from .app import MovieRecommendationApp
 
 app = Flask(__name__)
 CORS(app)
 
-# Instancia global de la aplicación
+# Instancia global de la aplicacion
 movie_app = MovieRecommendationApp()
 
 
-# ============ INICIALIZACIÓN ============
+# ============ INICIALIZACION ============
 
 @app.route('/api/init', methods=['POST'])
 def initialize():
@@ -32,7 +32,7 @@ def initialize():
 
 @app.route('/api/stats', methods=['GET'])
 def get_stats():
-    """Obtener estadísticas del grafo."""
+    """Obtener estadisticas del grafo."""
     try:
         stats = movie_app.get_graph_stats()
         return jsonify({"success": True, "data": stats}), 200
@@ -76,23 +76,23 @@ def create_user():
         return jsonify({"success": False, "error": str(e)}), 500
 
 
-# ============ PELÍCULAS ============
+# ============ PELICULAS ============
 
 @app.route('/api/movies/<movie_id>', methods=['GET'])
 def get_movie(movie_id):
-    """Obtener datos de una película."""
+    """Obtener datos de una pelicula."""
     try:
         movie = movie_app.get_movie(movie_id)
         if movie:
             return jsonify({"success": True, "data": movie}), 200
-        return jsonify({"success": False, "error": "Película no encontrada"}), 404
+        return jsonify({"success": False, "error": "Pelicula no encontrada"}), 404
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
 
 @app.route('/api/movies', methods=['GET'])
 def list_movies():
-    """Listar todas las películas."""
+    """Listar todas las peliculas."""
     try:
         limit = request.args.get('limit', 50, type=int)
         movies = movie_app.list_all_movies()[:limit]
@@ -103,7 +103,7 @@ def list_movies():
 
 @app.route('/api/movies/genre/<genre_name>', methods=['GET'])
 def get_movies_by_genre(genre_name):
-    """Obtener películas de un género."""
+    """Obtener peliculas de un genero."""
     try:
         movies = movie_app.get_movies_by_genre(genre_name)
         return jsonify({"success": True, "data": movies}), 200
@@ -113,7 +113,7 @@ def get_movies_by_genre(genre_name):
 
 @app.route('/api/top-rated-movies', methods=['GET'])
 def top_rated():
-    """Obtener películas mejor calificadas."""
+    """Obtener peliculas mejor calificadas."""
     try:
         limit = request.args.get('limit', 10, type=int)
         movies = movie_app.get_top_rated_movies(limit)
@@ -124,7 +124,7 @@ def top_rated():
 
 @app.route('/api/trending-movies', methods=['GET'])
 def trending():
-    """Obtener películas tendencia."""
+    """Obtener peliculas tendencia."""
     try:
         limit = request.args.get('limit', 10, type=int)
         movies = movie_app.get_trending_movies(limit)
@@ -141,7 +141,7 @@ def get_recommendations(user_id):
     try:
         strategy = request.args.get('strategy', 'personalized')
         limit = request.args.get('limit', 10, type=int)
-        
+
         if strategy == 'collaborative':
             recs = movie_app.recommend_collaborative_filtering(user_id, limit)
         elif strategy == 'content':
@@ -154,7 +154,7 @@ def get_recommendations(user_id):
             recs = movie_app.recommend_from_community(user_id, limit)
         else:  # personalized (default)
             recs = movie_app.get_personalized_recommendations(user_id, limit)
-        
+
         return jsonify({"success": True, "strategy": strategy, "data": recs}), 200
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
@@ -184,47 +184,47 @@ def user_similarity(user1_id, user2_id):
 
 @app.route('/api/users/<user_id>/watch/<movie_id>', methods=['POST'])
 def watch_movie(user_id, movie_id):
-    """Marcar película como vista."""
+    """Marcar pelicula como vista."""
     try:
-        rel = movie_app.user_watch_movie(user_id, movie_id)
-        return jsonify({"success": True, "message": "Película marcada como vista"}), 201
+        movie_app.user_watch_movie(user_id, movie_id)
+        return jsonify({"success": True, "message": "Pelicula marcada como vista"}), 201
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
 
 @app.route('/api/users/<user_id>/rate/<movie_id>', methods=['POST'])
 def rate_movie(user_id, movie_id):
-    """Calificar una película."""
+    """Calificar una pelicula."""
     try:
         payload = request.get_json(silent=True) or {}
         rating = payload.get('rating')
         if not rating or not (1 <= rating <= 10):
             return jsonify({"success": False, "error": "Rating debe estar entre 1 y 10"}), 400
-        
-        rel = movie_app.user_rate_movie(user_id, movie_id, rating)
-        return jsonify({"success": True, "message": "Película calificada"}), 201
+
+        movie_app.user_rate_movie(user_id, movie_id, rating)
+        return jsonify({"success": True, "message": "Pelicula calificada"}), 201
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
 
 @app.route('/api/users/<user_id>/like/<movie_id>', methods=['POST'])
 def like_movie(user_id, movie_id):
-    """Marcar película como favorita."""
+    """Marcar pelicula como favorita."""
     try:
-        rel = movie_app.user_like_movie(user_id, movie_id)
-        return jsonify({"success": True, "message": "Película agregada a favoritos"}), 201
+        movie_app.user_like_movie(user_id, movie_id)
+        return jsonify({"success": True, "message": "Pelicula agregada a favoritos"}), 201
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
 
 @app.route('/api/users/<user_id>/bookmark/<movie_id>', methods=['POST'])
 def bookmark_movie(user_id, movie_id):
-    """Agregar película a la lista de ver después."""
+    """Agregar pelicula a la lista de ver despues."""
     try:
         payload = request.get_json(silent=True) or {}
         priority = payload.get('priority', 3)
-        rel = movie_app.user_bookmark_movie(user_id, movie_id, priority)
-        return jsonify({"success": True, "message": "Película agregada a lista de ver"}), 201
+        movie_app.user_bookmark_movie(user_id, movie_id, priority)
+        return jsonify({"success": True, "message": "Pelicula agregada a lista de ver"}), 201
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
@@ -233,7 +233,7 @@ def bookmark_movie(user_id, movie_id):
 def follow_user(user_id, other_user_id):
     """Un usuario sigue a otro."""
     try:
-        rel = movie_app.user_follow_user(user_id, other_user_id)
+        movie_app.user_follow_user(user_id, other_user_id)
         return jsonify({"success": True, "message": "Usuario seguido"}), 201
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
@@ -243,7 +243,7 @@ def follow_user(user_id, other_user_id):
 
 @app.route('/api/directors-stats', methods=['GET'])
 def directors_stats():
-    """Obtener estadísticas de directores."""
+    """Obtener estadisticas de directores."""
     try:
         stats = movie_app.get_directors_stats()
         return jsonify({"success": True, "data": stats}), 200
@@ -253,7 +253,7 @@ def directors_stats():
 
 @app.route('/api/engagement-stats', methods=['GET'])
 def engagement_stats():
-    """Obtener estadísticas de engagement."""
+    """Obtener estadisticas de engagement."""
     try:
         stats = movie_app.get_user_engagement_stats()
         return jsonify({"success": True, "data": stats}), 200
@@ -263,7 +263,7 @@ def engagement_stats():
 
 @app.route('/api/movies-without-reviews', methods=['GET'])
 def movies_without_reviews():
-    """Obtener películas sin reseñas."""
+    """Obtener peliculas sin resenas."""
     try:
         limit = request.args.get('limit', 20, type=int)
         movies = movie_app.get_movies_without_reviews()[:limit]
@@ -280,5 +280,10 @@ def health():
     return jsonify({"success": True, "message": "API is running"}), 200
 
 
+def run_api(host: str = "0.0.0.0", port: int = 5000, debug: bool = False) -> None:
+    """Run the Flask server."""
+    app.run(debug=debug, host=host, port=port)
+
+
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    run_api(debug=True)
