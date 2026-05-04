@@ -10,7 +10,6 @@ LABEL_MOVIE = "Movie"
 LABEL_GENRE = "Genre"
 LABEL_ACTOR = "Actor"
 LABEL_DIRECTOR = "Director"
-LABEL_REVIEW = "Review"
 
 # Tipos de Relaciones
 REL_WATCHED = "WATCHED"
@@ -22,9 +21,7 @@ REL_STARS_IN = "STARS_IN"
 REL_DIRECTED_BY = "DIRECTED_BY"
 REL_WROTE_REVIEW = "WROTE_REVIEW"
 REL_FOLLOWS = "FOLLOWS"
-REL_RECOMMENDS = "RECOMMENDS"
 REL_SIMILAR_TO = "SIMILAR_TO"
-REL_SIMILAR_USER = "SIMILAR_USER"
 
 # Propiedades de Usuarios
 PROP_USER_ID = "user_id"
@@ -65,30 +62,30 @@ PROP_DIRECTOR_NACIONALIDAD = "nacionalidad"
 PROP_DIRECTOR_PELICULAS = "películas_dirigidas"
 PROP_DIRECTOR_BIO = "bio"
 
-# Propiedades de Reviews
-PROP_REVIEW_ID = "review_id"
-PROP_REVIEW_CALIFICACION = "calificación"
-PROP_REVIEW_TEXTO = "texto"
-PROP_REVIEW_FECHA = "fecha"
-PROP_REVIEW_UTIL_COUNT = "útil_count"
-PROP_REVIEW_SPOILER = "spoiler"
-
 # Propiedades de Relaciones
 PROP_REL_FECHA = "fecha"
 PROP_REL_DURACION = "duracion_visto"
 PROP_REL_COMPLETADO = "completado"
 PROP_REL_PUNTUACION = "puntuacion"
+PROP_REL_UTIL = "útil"
 PROP_REL_MOTIVACION = "motivación"
+PROP_REL_INTENSIDAD = "intensidad"
 PROP_REL_PRIORIDAD = "prioridad"
+PROP_REL_RECORDATORIO = "recordatorio"
 PROP_REL_ES_PRINCIPAL = "es_principal"
 PROP_REL_PESO = "peso"
+PROP_REL_ORIGEN = "origen"
 PROP_REL_ROL = "rol"
 PROP_REL_ORDEN = "orden"
 PROP_REL_PANTALLA_TIME = "pantalla_time"
-PROP_REL_CONFIANZA = "confianza"
+PROP_REL_VERSION = "versión"
+PROP_REL_CREDITO_PRINCIPAL = "credito_principal"
+PROP_REL_EDITADO = "editado"
+PROP_REL_SPOILER = "spoiler"
+PROP_REL_NOTIFICACIONES = "notificaciones"
+PROP_REL_NIVEL_INTERACCION = "nivel_interaccion"
 PROP_REL_SIMILITUD = "similitud"
-PROP_REL_PELICULAS_COMUNES = "películas_comunes"
-PROP_REL_RAZON = "razón"
+PROP_REL_MISMO_GENERO = "mismo_genero"
 
 # Índices recomendados
 INDEXES = [
@@ -98,5 +95,4 @@ INDEXES = [
     (LABEL_GENRE, PROP_GENRE_ID),
     (LABEL_ACTOR, PROP_ACTOR_ID),
     (LABEL_DIRECTOR, PROP_DIRECTOR_ID),
-    (LABEL_REVIEW, PROP_REVIEW_ID),
 ]

@@ -5,7 +5,6 @@ Ejecuta ejemplos de todas las funcionalidades principales del proyecto.
 """
 
 from src.neo4j_project.app import MovieRecommendationApp
-from src.neo4j_project.data_generator import DataGenerator
 import sys
 
 
@@ -22,10 +21,10 @@ def demo_initialization():
     
     app = MovieRecommendationApp()
     
-    print("\n📦 Inicializando base de datos con datos de prueba...")
+    print("\n Inicializando base de datos con datos de prueba...")
     stats = app.initialize_database(clear=True)
     
-    print("\n✅ Base de datos inicializada exitosamente!")
+    print("\n Base de datos inicializada exitosamente!")
     total_nodes = sum([stats["users"], stats["movies"], stats["genres"], 
                       stats["actors"], stats["directors"]])
     print(f"\n   Nodos: {total_nodes:,}")
@@ -44,11 +43,12 @@ def demo_graph_stats(app):
     
     stats = app.get_graph_stats()
     
-    print("\n📊 Estadísticas Generales:")
+    print("\n Estadísticas Generales:")
     for key, value in stats.items():
         print(f"   {key}: {value:,}")
-    
-    print(f"\n✅ Grafo conexo: {len(stats) > 0}")
+
+    connected = app.crud.is_graph_connected()
+    print(f"\n Grafo conexo: {connected}")
 
 
 def demo_crud_operations(app):
@@ -66,48 +66,48 @@ def demo_crud_operations(app):
         "país": "Guatemala",
         "fechaRegistro": "2024-03-15"
     })
-    print("   ✅ Usuario creado exitosamente")
+    print("    Usuario creado exitosamente")
     
     # READ
     print("\n▶ READ - Leyendo datos...")
     user = app.get_user("user_demo_001")
     if user:
-        print(f"   ✅ Usuario encontrado: {user['nombre']} ({user['email']})")
+        print(f"    Usuario encontrado: {user['nombre']} ({user['email']})")
     
     # UPDATE
     print("\n▶ UPDATE - Actualizando propiedades...")
     updated = app.update_user("user_demo_001", {"edad": 26, "país": "Estados Unidos"})
-    print(f"   ✅ Usuario actualizado: {updated['nombre']} ahora tiene {updated['edad']} años")
+    print(f"    Usuario actualizado: {updated['nombre']} ahora tiene {updated['edad']} años")
     
     # DELETE
     print("\n▶ DELETE - Eliminando nodo...")
     deleted = app.delete_user("user_demo_001")
-    print(f"   ✅ Usuario eliminado: {deleted}")
+    print(f"    Usuario eliminado: {deleted}")
 
 
 def demo_queries(app):
     """Demostración 4: Consultas Cypher."""
     print_section("4. CONSULTAS CYPHER")
     
-    print("\n🔍 Consulta 1: Películas Mejor Calificadas")
+    print("\n Consulta 1: Películas Mejor Calificadas")
     top_movies = app.get_top_rated_movies(3)
     for i, movie in enumerate(top_movies, 1):
         print(f"   {i}. {movie['película']} ({movie['año']})")
         print(f"      Calificación: {movie['calificacion_promedio']}/10")
         print(f"      Votos: {movie['total_calificaciones']}")
     
-    print("\n🔍 Consulta 2: Directores y Estadísticas")
+    print("\n Consulta 2: Directores y Estadísticas")
     directors = app.get_directors_stats()[:3]
     for i, director in enumerate(directors, 1):
         print(f"   {i}. {director['director']} - {director['películas_dirigidas']} películas")
     
-    print("\n🔍 Consulta 3: Estadísticas de Engagement")
+    print("\n Consulta 3: Estadísticas de Engagement")
     engagement = app.get_user_engagement_stats()
     print(f"   Total usuarios: {engagement['total_usuarios']}")
     print(f"   Promedio de películas vistas: {engagement['promedio_vistas']:.1f}")
     print(f"   Promedio de calificaciones: {engagement['promedio_calificaciones']:.1f}")
     
-    print("\n🔍 Consulta 4: Películas por Género")
+    print("\n Consulta 4: Películas por Género")
     action_movies = app.get_movies_by_genre("Acción")
     print(f"   Películas de acción: {len(action_movies)}")
     for movie in action_movies[:3]:
@@ -121,7 +121,7 @@ def demo_recommendations(app):
     # Usar un usuario que exista
     user_id = "user_0001"
     
-    print(f"\n🎯 Generando recomendaciones para {user_id}...\n")
+    print(f"\n Generando recomendaciones para {user_id}...\n")
     
     print("▶ Estrategia 1: Filtrado Colaborativo")
     try:
@@ -169,38 +169,38 @@ def demo_interactions(app):
     user_id = "user_0001"
     movie_id = "movie_00001"
     
-    print(f"\n🎬 Usuario {user_id} interactuando con películas...")
+    print(f"\n Usuario {user_id} interactuando con películas...")
     
     # Watch
     print(f"\n▶ Marcar película como vista...")
     try:
         app.user_watch_movie(user_id, movie_id)
-        print(f"   ✅ Película {movie_id} marcada como vista")
+        print(f"    Película {movie_id} marcada como vista")
     except:
-        print(f"   ⚠ No se pudo marcar (relación puede ya existir)")
+        print(f"    No se pudo marcar (relación puede ya existir)")
     
     # Rate
     print(f"\n▶ Calificar película (8/10)...")
     try:
         app.user_rate_movie(user_id, movie_id, rating=8)
-        print(f"   ✅ Película calificada con 8/10")
+        print(f"    Película calificada con 8/10")
     except:
-        print(f"   ⚠ No se pudo calificar (relación puede ya existir)")
+        print(f"    No se pudo calificar (relación puede ya existir)")
     
     # Like
     print(f"\n▶ Marcar como favorita...")
     try:
         app.user_like_movie(user_id, movie_id)
-        print(f"   ✅ Película agregada a favoritos")
+        print(f"    Película agregada a favoritos")
     except:
-        print(f"   ⚠ No se pudo agregar (relación puede ya existir)")
+        print(f"    No se pudo agregar (relación puede ya existir)")
 
 
 def main():
     """Función principal."""
     print("""
 ╔═══════════════════════════════════════════════════════════════════╗
-║  🎬 SISTEMA DE RECOMENDACIÓN DE PELÍCULAS - DEMO                 ║
+║  SISTEMA DE RECOMENDACIÓN DE PELÍCULAS - DEMO                 ║
 ║  Proyecto 2 - Base de Datos 2 (CC3089)                           ║
 ╚═══════════════════════════════════════════════════════════════════╝
     """)
@@ -225,14 +225,14 @@ def main():
         demo_interactions(app)
         
         # Cierre
-        print_section("✅ DEMOSTRACIÓN COMPLETADA")
-        print("\n🎉 Todas las funcionalidades se ejecutaron exitosamente!")
-        print("\nPara más información, ver: docs/usage.md")
+        print_section(" DEMOSTRACIÓN COMPLETADA")
+        print("\n Todas las funcionalidades se ejecutaron exitosamente!")
+        print("\nPara más información, ver: README.md")
         
         app.close()
         
     except Exception as e:
-        print(f"\n❌ Error durante la demostración: {e}")
+        print(f"\n Error durante la demostración: {e}")
         import traceback
         traceback.print_exc()
         sys.exit(1)

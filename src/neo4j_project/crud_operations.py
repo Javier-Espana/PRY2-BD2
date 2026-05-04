@@ -57,10 +57,6 @@ class CrudOperations:
         """Crear un director."""
         return self.create_node_single_label(schema.LABEL_DIRECTOR, director_data)
     
-    def create_review(self, review_data: Dict) -> Dict:
-        """Crear una reseña."""
-        return self.create_node_single_label(schema.LABEL_REVIEW, review_data)
-    
     # ============ NODOS - LECTURA ============
     
     def get_node_by_id(self, label: str, id_prop: str, id_value: str) -> Optional[Dict]:
@@ -367,17 +363,17 @@ class CrudOperations:
     def is_graph_connected(self) -> bool:
         """Verificar si el grafo es conexo."""
         def _check(tx):
-            # Obtener un nodo aleatorio y hacer BFS para ver si alcanza todos
-            query = """MATCH (n) 
-                       WITH n LIMIT 1
-                       CALL apoc.path.spanningTree(n, {}) 
-                       YIELD path
-                       RETURN count(distinct nodes(path)) as reachable"""
+            query = """
+            MATCH (n)
+            WITH n LIMIT 1
+            MATCH (n)-[*0..]-(m)
+            RETURN count(DISTINCT m) as reachable
+            """
             result = tx.run(query)
             reachable = result.single()["reachable"] if result else 0
-            
-            # Contar nodos totales
-            total = self.count_all_nodes()
+
+            total_result = tx.run("MATCH (n) RETURN count(n) as count")
+            total = total_result.single()["count"] if total_result else 0
             return reachable == total
         
         return self.conn.execute_read(_check)

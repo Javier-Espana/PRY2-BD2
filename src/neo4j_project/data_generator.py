@@ -222,7 +222,8 @@ class DataGenerator:
                 "user_id": rel["user_id"],
                 "movie_id": rel["movie_id"],
                 "fecha": rel["fecha"],
-                "motivación": random.choice(["Excelente actuación", "Trama emocionante", "Música increíble"])
+                "motivación": random.choice(["Excelente actuación", "Trama emocionante", "Música increíble"]),
+                "intensidad": random.randint(1, 5)
             })
         
         # BOOKMARKED: Usuarios agregan a watchlist
@@ -232,7 +233,8 @@ class DataGenerator:
                     "user_id": user["user_id"],
                     "movie_id": movie["movie_id"],
                     "fecha": (datetime.now() - timedelta(days=random.randint(0, 30))).strftime("%Y-%m-%d"),
-                    "prioridad": random.randint(1, 5)
+                    "prioridad": random.randint(1, 5),
+                    "recordatorio": "true" if random.random() > 0.5 else "false"
                 })
         
         # HAS_GENRE: Películas tienen géneros (cada película 1-3 géneros)
@@ -242,7 +244,8 @@ class DataGenerator:
                     "movie_id": movie["movie_id"],
                     "genre_id": genre["genre_id"],
                     "es_principal": "true" if random.random() > 0.6 else "false",
-                    "peso": round(random.uniform(0.5, 1.0), 2)
+                    "peso": round(random.uniform(0.5, 1.0), 2),
+                    "origen": random.choice(["curado", "usuario", "automatico"])
                 })
         
         # STARS_IN: Actores en películas (cada película 5-20 actores)
@@ -263,17 +266,18 @@ class DataGenerator:
                 "director_id": director["director_id"],
                 "movie_id": movie["movie_id"],
                 "año_filmacion": movie["año"],
-                "versión": "Original"
+                "versión": "Original",
+                "credito_principal": "true" if random.random() > 0.1 else "false"
             })
         
         # WROTE_REVIEW: Usuarios escriben reseñas (20% de rated)
         for rel in random.sample(relationships["rated"], k=int(len(relationships["rated"]) * 0.2)):
-            review_text = "Excelente película, muy recomendada." if rel["puntuacion"] >= 7 else "No me gustó mucho."
             relationships["wrote_review"].append({
                 "user_id": rel["user_id"],
                 "movie_id": rel["movie_id"],
                 "fecha": rel["fecha"],
-                "editado": "false"
+                "editado": "false",
+                "spoiler": "true" if random.random() > 0.85 else "false"
             })
         
         # FOLLOWS: Usuarios siguen a otros usuarios
@@ -284,7 +288,8 @@ class DataGenerator:
                         "user_id": user["user_id"],
                         "other_user_id": other_user["user_id"],
                         "fecha": (datetime.now() - timedelta(days=random.randint(0, 365))).strftime("%Y-%m-%d"),
-                        "notificaciones": "true" if random.random() > 0.5 else "false"
+                        "notificaciones": "true" if random.random() > 0.5 else "false",
+                        "nivel_interaccion": random.randint(1, 5)
                     })
         
         # SIMILAR_TO: Películas similares
@@ -293,7 +298,9 @@ class DataGenerator:
                 relationships["similar_to"].append({
                     "movie_id": movie1["movie_id"],
                     "similar_movie_id": movie2["movie_id"],
-                    "similitud": round(random.uniform(0.6, 1.0), 2)
+                    "similitud": round(random.uniform(0.6, 1.0), 2),
+                    "mismo_genero": "true" if random.random() > 0.4 else "false",
+                    "origen": random.choice(["metadata", "co-views", "manual"])
                 })
         
         return relationships
@@ -322,11 +329,11 @@ class DataGenerator:
         print("Generando datos de prueba...")
         
         # Generar datos
-        users = DataGenerator.generate_users(500)
-        movies = DataGenerator.generate_movies(1000)
+        users = DataGenerator.generate_users(1000)
+        movies = DataGenerator.generate_movies(1500)
         genres = DataGenerator.generate_genres()
-        actors = DataGenerator.generate_actors(2500)
-        directors = DataGenerator.generate_directors(500)
+        actors = DataGenerator.generate_actors(3000)
+        directors = DataGenerator.generate_directors(800)
         
         # Guardar
         DataGenerator.save_to_csv(users, "users.csv", data_dir)
@@ -343,7 +350,7 @@ class DataGenerator:
         total_nodes = len(users) + len(movies) + len(genres) + len(actors) + len(directors)
         total_rels = sum(len(v) for v in rels.values())
         
-        print(f"\n✅ Generación completada!")
+        print(f"\n Generación completada!")
         print(f"   Total de nodos: {total_nodes:,}")
         print(f"   Total de relaciones: {total_rels:,}")
         

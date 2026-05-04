@@ -15,10 +15,10 @@ Un sistema que permite a usuarios descubrir películas basándose en:
 
 ## 📊 Estadísticas del Proyecto
 
-- **6 etiquetas de nodos** (User, Movie, Genre, Actor, Director, Review)
-- **12 tipos de relaciones** (WATCHED, RATED, LIKED, BOOKMARKED, etc.)
+- **5 etiquetas de nodos** (User, Movie, Genre, Actor, Director)
+- **10 tipos de relaciones** (WATCHED, RATED, LIKED, BOOKMARKED, etc.)
 - **6,000+ nodos** generados automáticamente
-- **30,000+ relaciones** en el grafo
+- **70,000+ relaciones** en el grafo
 - **6 consultas Cypher** diferentes
 - **6 algoritmos de recomendación** (data science)
 - **API REST** funcional con Flask
@@ -29,7 +29,6 @@ Un sistema que permite a usuarios descubrir películas basándose en:
 PRY2-BD2/
 ├── src/neo4j_project/
 │   ├── app.py                    # Aplicación principal
-│   ├── api.py                    # API REST
 │   ├── schema.py                 # Definiciones de esquema
 │   ├── crud_operations.py        # Operaciones CRUD
 │   ├── queries.py                # Consultas Cypher
@@ -40,9 +39,7 @@ PRY2-BD2/
 │   └── config.py                 # Configuración
 ├── docs/
 │   ├── modelo_datos.tex          # 📄 Documento LaTeX con modelo
-│   ├── model.md                  # Diagrama del modelo
-│   └── usage.md                  # Guía de uso
-├── data/                         # Archivos CSV generados
+│   └── Proyecto 2 - Neo4j.pdf     # Instrucciones del proyecto
 ├── tests/
 ├── api.py                        # API Flask
 ├── requirements.txt
@@ -85,8 +82,8 @@ python -m src.neo4j_project.data_generator
 
 ### Modelado de Datos
 - ✅ Motor de recomendación apropiado (5 pts)
-- ✅ 5+ etiquetas con 5+ propiedades cada una (5 pts)
-- ✅ 10+ relaciones con 3+ propiedades cada una (5 pts)
+- ✅ 5 etiquetas con 5+ propiedades cada una (5 pts)
+- ✅ 10 relaciones con 3+ propiedades cada una (5 pts)
 - ✅ Todos los tipos de datos: String, Integer, Float, Boolean, List, Date (5 pts)
 
 ### Set de Datos
@@ -156,18 +153,16 @@ GET    /api/trending-movies                  Tendencias
 
 ## 📖 Documentación
 
-Ver [`docs/usage.md`](docs/usage.md) para guía completa de uso.
-
 Ver [`docs/modelo_datos.tex`](docs/modelo_datos.tex) para documento LaTeX con diagrama del modelo.
 
 ## 💾 Datos de Prueba
 
 El sistema genera automáticamente:
-- 500 usuarios
-- 1,000 películas
+- 1,000 usuarios
+- 1,500 películas
 - 20 géneros
-- 2,500 actores
-- 500 directores
+- 3,000 actores
+- 800 directores
 
 Total: **6,000+ nodos** (cumple mínimo 5,000)
 
@@ -211,7 +206,7 @@ curl http://localhost:5000/api/stats
 
 Para la presentación, demostrar:
 
-1. ✅ **Modelo de datos** - 6 etiquetas, 12 relaciones, tipos de datos
+1. ✅ **Modelo de datos** - 5 etiquetas, 10 relaciones, tipos de datos
 2. ✅ **CRUD completo** - Crear, leer, actualizar, eliminar nodos y relaciones
 3. ✅ **Consultas Cypher** - 6 consultas diferentes ejecutándose
 4. ✅ **Recomendaciones** - Algoritmos de data science funcionando
@@ -233,7 +228,7 @@ Para la presentación, demostrar:
 
 ## 👥 Equipo
 
-Ver [`docs/TODO_FOR_TEAM.md`](docs/TODO_FOR_TEAM.md) para asignación de tareas.
+Documento del modelo disponible en `docs/modelo_datos.tex`.
 
 ---
 

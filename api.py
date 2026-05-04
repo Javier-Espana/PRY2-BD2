@@ -19,7 +19,8 @@ movie_app = MovieRecommendationApp()
 def initialize():
     """Inicializar base de datos."""
     try:
-        stats = movie_app.initialize_database(clear=request.json.get('clear', True))
+        payload = request.get_json(silent=True) or {}
+        stats = movie_app.initialize_database(clear=payload.get('clear', True))
         return jsonify({
             "success": True,
             "message": "Base de datos inicializada",
@@ -68,7 +69,7 @@ def list_users():
 def create_user():
     """Crear un nuevo usuario."""
     try:
-        user_data = request.json
+        user_data = request.get_json(silent=True) or {}
         user = movie_app.create_user(user_data)
         return jsonify({"success": True, "data": user}), 201
     except Exception as e:
@@ -195,7 +196,8 @@ def watch_movie(user_id, movie_id):
 def rate_movie(user_id, movie_id):
     """Calificar una película."""
     try:
-        rating = request.json.get('rating')
+        payload = request.get_json(silent=True) or {}
+        rating = payload.get('rating')
         if not rating or not (1 <= rating <= 10):
             return jsonify({"success": False, "error": "Rating debe estar entre 1 y 10"}), 400
         
@@ -219,7 +221,8 @@ def like_movie(user_id, movie_id):
 def bookmark_movie(user_id, movie_id):
     """Agregar película a la lista de ver después."""
     try:
-        priority = request.json.get('priority', 3)
+        payload = request.get_json(silent=True) or {}
+        priority = payload.get('priority', 3)
         rel = movie_app.user_bookmark_movie(user_id, movie_id, priority)
         return jsonify({"success": True, "message": "Película agregada a lista de ver"}), 201
     except Exception as e:

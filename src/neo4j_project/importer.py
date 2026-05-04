@@ -2,11 +2,7 @@
 
 Carga datos de archivos CSV y establece relaciones en la base de datos.
 """
-import csv
-from typing import Dict, List, Any
-from pathlib import Path
 from .neo4j_conn import get_connection
-from . import schema
 
 
 class DataImporter:
@@ -128,7 +124,7 @@ class DataImporter:
             }]->(m)
             RETURN count(*) as count
             """
-            result = tx.run(query)
+            result = tx.run(query, file=csv_path)
             return result.single()["count"]
         
         return self.conn.execute_write(_import)
@@ -147,7 +143,7 @@ class DataImporter:
             }]->(m)
             RETURN count(*) as count
             """
-            result = tx.run(query)
+            result = tx.run(query, file=csv_path)
             return result.single()["count"]
         
         return self.conn.execute_write(_import)
@@ -161,11 +157,12 @@ class DataImporter:
             MATCH (m:Movie {movie_id: row.movie_id})
             CREATE (u)-[:LIKED {
                 fecha: date(row.fecha),
-                motivación: row.motivación
+                motivación: row.motivación,
+                intensidad: toInteger(row.intensidad)
             }]->(m)
             RETURN count(*) as count
             """
-            result = tx.run(query)
+            result = tx.run(query, file=csv_path)
             return result.single()["count"]
         
         return self.conn.execute_write(_import)
@@ -179,11 +176,12 @@ class DataImporter:
             MATCH (m:Movie {movie_id: row.movie_id})
             CREATE (u)-[:BOOKMARKED {
                 fecha: date(row.fecha),
-                prioridad: toInteger(row.prioridad)
+                prioridad: toInteger(row.prioridad),
+                recordatorio: row.recordatorio = 'true'
             }]->(m)
             RETURN count(*) as count
             """
-            result = tx.run(query)
+            result = tx.run(query, file=csv_path)
             return result.single()["count"]
         
         return self.conn.execute_write(_import)
@@ -197,11 +195,12 @@ class DataImporter:
             MATCH (g:Genre {genre_id: row.genre_id})
             CREATE (m)-[:HAS_GENRE {
                 es_principal: row.es_principal = 'true',
-                peso: toFloat(row.peso)
+                peso: toFloat(row.peso),
+                origen: row.origen
             }]->(g)
             RETURN count(*) as count
             """
-            result = tx.run(query)
+            result = tx.run(query, file=csv_path)
             return result.single()["count"]
         
         return self.conn.execute_write(_import)
@@ -220,7 +219,7 @@ class DataImporter:
             }]->(m)
             RETURN count(*) as count
             """
-            result = tx.run(query)
+            result = tx.run(query, file=csv_path)
             return result.single()["count"]
         
         return self.conn.execute_write(_import)
@@ -234,15 +233,35 @@ class DataImporter:
             MATCH (m:Movie {movie_id: row.movie_id})
             CREATE (d)-[:DIRECTED_BY {
                 año_filmacion: toInteger(row.año_filmacion),
-                versión: row.versión
+                versión: row.versión,
+                credito_principal: row.credito_principal = 'true'
             }]->(m)
             RETURN count(*) as count
             """
-            result = tx.run(query)
+            result = tx.run(query, file=csv_path)
             return result.single()["count"]
         
         return self.conn.execute_write(_import)
     
+    def import_wrote_review_relationships(self, csv_path: str) -> int:
+        """Importar relaciones WROTE_REVIEW."""
+        def _import(tx):
+            query = """
+            LOAD CSV WITH HEADERS FROM "file:///" + $file as row
+            MATCH (u:User {user_id: row.user_id})
+            MATCH (m:Movie {movie_id: row.movie_id})
+            CREATE (u)-[:WROTE_REVIEW {
+                fecha: date(row.fecha),
+                editado: row.editado = 'true',
+                spoiler: row.spoiler = 'true'
+            }]->(m)
+            RETURN count(*) as count
+            """
+            result = tx.run(query, file=csv_path)
+            return result.single()["count"]
+
+        return self.conn.execute_write(_import)
+
     def import_follows_relationships(self, csv_path: str) -> int:
         """Importar relaciones FOLLOWS."""
         def _import(tx):
@@ -252,11 +271,12 @@ class DataImporter:
             MATCH (u2:User {user_id: row.other_user_id})
             CREATE (u1)-[:FOLLOWS {
                 fecha: date(row.fecha),
-                notificaciones: row.notificaciones = 'true'
+                notificaciones: row.notificaciones = 'true',
+                nivel_interaccion: toInteger(row.nivel_interaccion)
             }]->(u2)
             RETURN count(*) as count
             """
-            result = tx.run(query)
+            result = tx.run(query, file=csv_path)
             return result.single()["count"]
         
         return self.conn.execute_write(_import)
@@ -269,11 +289,13 @@ class DataImporter:
             MATCH (m1:Movie {movie_id: row.movie_id})
             MATCH (m2:Movie {movie_id: row.similar_movie_id})
             CREATE (m1)-[:SIMILAR_TO {
-                similitud: toFloat(row.similitud)
+                similitud: toFloat(row.similitud),
+                mismo_genero: row.mismo_genero = 'true',
+                origen: row.origen
             }]->(m2)
             RETURN count(*) as count
             """
-            result = tx.run(query)
+            result = tx.run(query, file=csv_path)
             return result.single()["count"]
         
         return self.conn.execute_write(_import)
@@ -331,6 +353,7 @@ if __name__ == "__main__":
     print(f"HAS_GENRE: {importer.import_has_genre_relationships('data/has_genre.csv')}")
     print(f"STARS_IN: {importer.import_stars_in_relationships('data/stars_in.csv')}")
     print(f"DIRECTED_BY: {importer.import_directed_by_relationships('data/directed_by.csv')}")
+    print(f"WROTE_REVIEW: {importer.import_wrote_review_relationships('data/wrote_review.csv')}")
     print(f"FOLLOWS: {importer.import_follows_relationships('data/follows.csv')}")
     print(f"SIMILAR_TO: {importer.import_similar_to_relationships('data/similar_to.csv')}")
-    print("\n✅ Importación completada!")
+    print("\n Importación completada!")

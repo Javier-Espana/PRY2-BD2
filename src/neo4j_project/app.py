@@ -54,17 +54,18 @@ class MovieRecommendationApp:
             "has_genre": self.importer.import_has_genre_relationships(f"{data_dir}/has_genre.csv"),
             "stars_in": self.importer.import_stars_in_relationships(f"{data_dir}/stars_in.csv"),
             "directed_by": self.importer.import_directed_by_relationships(f"{data_dir}/directed_by.csv"),
+            "wrote_review": self.importer.import_wrote_review_relationships(f"{data_dir}/wrote_review.csv"),
             "follows": self.importer.import_follows_relationships(f"{data_dir}/follows.csv"),
             "similar_to": self.importer.import_similar_to_relationships(f"{data_dir}/similar_to.csv"),
         }
         
-        print("\n✅ Base de datos inicializada:")
+        print("\n Base de datos inicializada:")
         total_nodes = sum([stats["users"], stats["movies"], stats["genres"], stats["actors"], stats["directors"]])
         total_relationships = sum([v for k, v in stats.items() if k != "users" and k != "movies" and k != "genres" and k != "actors" and k != "directors"])
         
         for key, value in stats.items():
             print(f"   {key}: {value}")
-        print(f"\n   📊 Total: {total_nodes:,} nodos, {total_relationships:,} relaciones")
+        print(f"\n    Total: {total_nodes:,} nodos, {total_relationships:,} relaciones")
         
         return stats
     
@@ -164,7 +165,8 @@ class MovieRecommendationApp:
             schema.LABEL_MOVIE, schema.PROP_MOVIE_ID, movie_id,
             schema.REL_LIKED, {
                 "fecha": date.today().isoformat(),
-                "motivación": "Excelente película"
+                "motivación": "Excelente película",
+                "intensidad": 4
             }
         )
     
@@ -175,7 +177,8 @@ class MovieRecommendationApp:
             schema.LABEL_MOVIE, schema.PROP_MOVIE_ID, movie_id,
             schema.REL_BOOKMARKED, {
                 "fecha": date.today().isoformat(),
-                "prioridad": priority
+                "prioridad": priority,
+                "recordatorio": priority >= 4
             }
         )
     
@@ -186,7 +189,8 @@ class MovieRecommendationApp:
             schema.LABEL_USER, schema.PROP_USER_ID, other_user_id,
             schema.REL_FOLLOWS, {
                 "fecha": date.today().isoformat(),
-                "notificaciones": True
+                "notificaciones": True,
+                "nivel_interaccion": 3
             }
         )
     
@@ -321,7 +325,7 @@ def main():
             print(f"  {movie['película']}: {movie['vistas_ultimos_30_dias']} vistas")
         
         print("\n" + "=" * 60)
-        print("✅ Aplicación funcionando correctamente!")
+        print(" Aplicación funcionando correctamente!")
         print("=" * 60)
         
     finally:

@@ -65,7 +65,7 @@ Neo4j es ideal para este caso de uso porque:
 
 \subsection{Etiquetas de Nodos}
 
-El modelo define 6 etiquetas de nodos principales, cada una con al menos 5 propiedades:
+El modelo define 5 etiquetas de nodos principales, cada una con al menos 5 propiedades:
 
 \subsubsection{1. User (Usuario)}
 
@@ -161,29 +161,10 @@ bio & String & Biografía \\
 \caption{Propiedades del nodo Director}
 \end{table}
 
-\subsubsection{6. Review (Reseña)}
-
-\begin{table}[h]
-\centering
-\begin{tabular}{|l|l|l|}
-\hline
-\textbf{Propiedad} & \textbf{Tipo} & \textbf{Descripción} \\
-\hline
-review\_id & String & Identificador único \\
-calificación & Integer & Calificación 1-10 \\
-texto & String & Texto de la reseña \\
-fecha & Date & Fecha de publicación \\
-útil\_count & Integer & Votos de utilidad \\
-spoiler & Boolean & Contiene spoilers \\
-\hline
-\end{tabular}
-\caption{Propiedades del nodo Review}
-\end{table}
-
 \newpage
 \subsection{Tipos de Relaciones}
 
-Se han definido 12 tipos de relaciones diferentes, con un mínimo de 3 propiedades cada una:
+Se han definido 10 tipos de relaciones diferentes, con un mínimo de 3 propiedades cada una:
 
 \begin{table}[h]
 \centering
@@ -194,16 +175,14 @@ Se han definido 12 tipos de relaciones diferentes, con un mínimo de 3 propiedad
 \hline
 WATCHED & User → Movie & fecha, duracion\_visto, completado \\
 RATED & User → Movie & puntuacion, fecha, útil \\
-LIKED & User → Movie & fecha, motivación \\
-BOOKMARKED & User → Movie & fecha, prioridad \\
-HAS\_GENRE & Movie → Genre & es\_principal, peso \\
+LIKED & User → Movie & fecha, motivación, intensidad \\
+BOOKMARKED & User → Movie & fecha, prioridad, recordatorio \\
+HAS\_GENRE & Movie → Genre & es\_principal, peso, origen \\
 STARS\_IN & Actor → Movie & rol, orden, pantalla\_time \\
-DIRECTED\_BY & Director → Movie & año\_filmacion, versión \\
-WROTE\_REVIEW & User → Movie & fecha, editado \\
-FOLLOWS & User → User & fecha, notificaciones \\
-RECOMMENDS & User → Movie & confianza, fecha, razón \\
-SIMILAR\_TO & Movie → Movie & similitud \\
-SIMILAR\_USER & User → User & similitud, películas\_comunes \\
+DIRECTED\_BY & Director → Movie & año\_filmacion, versión, credito\_principal \\
+WROTE\_REVIEW & User → Movie & fecha, editado, spoiler \\
+FOLLOWS & User → User & fecha, notificaciones, nivel\_interaccion \\
+SIMILAR\_TO & Movie → Movie & similitud, mismo\_genero, origen \\
 \hline
 \end{tabular}
 \caption{Tipos de Relaciones del Modelo}
@@ -221,11 +200,11 @@ El modelo implementa todos los tipos de datos requeridos:
 \textbf{Tipo de Dato} & \textbf{Ejemplo} & \textbf{Ubicación} \\
 \hline
 \textbf{String} & ``Acción Aventura'' & Movie.título, Genre.nombre \\
-\textbf{Integer} & 2024, 150 & Movie.año, Actor.edad \\
-\textbf{Float} & 250.5, 0.85 & Movie.presupuesto, similitud \\
-\textbf{Boolean} & true, false & Movie.completado, Review.spoiler \\
+\textbf{Integer} & 2024, 150 & Movie.año, User.edad \\
+\textbf{Float} & 250.5, 0.85 & Movie.presupuesto, SIMILAR\_TO.similitud \\
+\textbf{Boolean} & true, false & WATCHED.completado, BOOKMARKED.recordatorio \\
 \textbf{List} & [``Oscar'', ``BAFTA''] & Actor.premios \\
-\textbf{Date} & 2024-03-15 & User.fechaRegistro, Actor.fechaNacimiento \\
+\textbf{Date} & 2024-03-15 & User.fechaRegistro, WATCHED.fecha \\
 \hline
 \end{tabular}
 \caption{Tipos de Datos Implementados}
@@ -283,19 +262,19 @@ El proyecto genera automáticamente datos de prueba suficientes para cumplir con
 \hline
 \textbf{Entidad} & \textbf{Cantidad} \\
 \hline
-Usuarios & 500 \\
-Películas & 1,000 \\
+Usuarios & 1,000 \\
+Películas & 1,500 \\
 Géneros & 20 \\
-Actores & 2,500 \\
-Directores & 500 \\
+Actores & 3,000 \\
+Directores & 800 \\
 \hline
-\textbf{TOTAL DE NODOS} & \textbf{4,520} \\
+\textbf{TOTAL DE NODOS} & \textbf{6,320} \\
 \hline
 \end{tabular}
 \caption{Volumen de Datos Generados}
 \end{table}
 
-\textbf{Nota}: Combinando relaciones (WATCHED, RATED, etc.), el total de nodos incluyendo Reviews y otras entidades derivadas supera los 5,000 requeridos.
+\textbf{Nota}: El total de nodos supera el mínimo requerido de 5,000.
 
 \subsection{Relaciones Generadas}
 
@@ -305,18 +284,18 @@ Directores & 500 \\
 \hline
 \textbf{Tipo de Relación} & \textbf{Cantidad Aprox.} \\
 \hline
-WATCHED & 6,000 \\
-RATED & 2,400 \\
-LIKED & 700 \\
-BOOKMARKED & 2,000 \\
-HAS\_GENRE & 3,000 \\
-STARS\_IN & 12,500 \\
-DIRECTED\_BY & 1,000 \\
-WROTE\_REVIEW & 500 \\
-FOLLOWS & 3,000 \\
-SIMILAR\_TO & 2,000 \\
+WATCHED & 22,000 \\
+RATED & 8,800 \\
+LIKED & 2,600 \\
+BOOKMARKED & 6,900 \\
+HAS\_GENRE & 3,700 \\
+STARS\_IN & 18,000 \\
+DIRECTED\_BY & 1,500 \\
+WROTE\_REVIEW & 1,700 \\
+FOLLOWS & 4,200 \\
+SIMILAR\_TO & 1,500 \\
 \hline
-\textbf{TOTAL} & \textbf{32,700+} \\
+\textbf{TOTAL} & \textbf{71,900+} \\
 \hline
 \end{tabular}
 \caption{Estimación de Relaciones}
@@ -334,6 +313,7 @@ Los datos se cargan desde archivos CSV utilizando la funcionalidad \texttt{LOAD 
     \item \texttt{directors.csv} - Directores
     \item \texttt{watched.csv} - Relaciones WATCHED
     \item \texttt{rated.csv} - Relaciones RATED
+    \item \texttt{wrote_review.csv} - Relaciones WROTE\_REVIEW
     \item \textit{...y más}
 \end{itemize}
 
