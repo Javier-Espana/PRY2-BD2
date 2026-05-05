@@ -55,8 +55,6 @@ def run_check() -> None:
             if stats['total_nodes'] >= 5000 and connected:
                 print(f"\n  OK: {stats['total_nodes']:,} nodos, "
                       f"{stats['total_relationships']:,} relaciones, grafo conexo")
-            else:
-                print(f"\n  ATENCION: revisa que tengas 5,000+ nodos y grafo conexo")
         else:
             print("\n  Base de datos vacia. Ejecuta: python main.py --mode init")
     finally:

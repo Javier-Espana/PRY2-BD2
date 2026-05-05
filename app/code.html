@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1.0" name="viewport"/>
-<title>SupplyChain Intelligence · Neo4j</title>
+<title>Nook Inc. · Control Panel</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
 <script src="https://unpkg.com/vis-network@9.1.9/standalone/umd/vis-network.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -95,9 +95,12 @@ select.inp{appearance:auto;cursor:pointer}
 
 <!-- SIDEBAR -->
 <nav class="sidebar">
-  <div class="sidebar-logo">
-    <h1>SupplyChain</h1>
-    <p>Neo4j Intelligence</p>
+  <div class="sidebar-logo" style="display:flex;align-items:center;gap:10px">
+    <img src="/app/icon/Icon.png" alt="logo" style="width:34px;height:34px;border-radius:6px;object-fit:cover;flex-shrink:0"/>
+    <div>
+      <h1>Nook Inc.</h1>
+      <p>Control Panel</p>
+    </div>
   </div>
   <div style="flex:1;padding:10px 0">
     <div class="nav-link active" onclick="go('dashboard')"><span class="ms material-symbols-outlined" style="font-variation-settings:'FILL' 1">dashboard</span>Dashboard</div>
@@ -187,7 +190,6 @@ select.inp{appearance:auto;cursor:pointer}
     <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
       <div>
         <h1>Entities</h1>
-        <p>CRUD completo: crear nodos (1 label / 2+ labels / 5+ props), visualizar, gestionar propiedades, eliminar</p>
       </div>
       <div style="display:flex;gap:6px;flex-shrink:0;margin-top:4px">
         <button onclick="openCreateModal()" class="btn btn-dark btn-sm"><span class="material-symbols-outlined" style="font-size:15px">add</span>Create (1 label)</button>
@@ -485,8 +487,11 @@ select.inp{appearance:auto;cursor:pointer}
         <code style="font-size:10.5px;color:#64748b;display:block;margin-bottom:10px;font-family:monospace">MATCH (p:Product) WHERE p.categoria = $cat RETURN p</code>
         <label class="lbl">Categoría del producto</label>
         <div style="display:flex;gap:6px;margin-bottom:10px">
-          <select class="inp" id="q1-example" style="width:140px;padding:5px 8px" onchange="document.getElementById('q1-cat').value=this.value">
-            <option value="">— example —</option><option>Bebidas</option><option>Lácteos</option><option>Carnes</option><option>Frutas</option><option>Verduras</option><option>Granos</option>
+          <select class="inp" id="q1-example" style="width:160px;padding:5px 8px" onchange="document.getElementById('q1-cat').value=this.value">
+            <option value="">— pick category —</option>
+            <option>Bebidas</option><option>Alimentos</option><option>Lácteos</option>
+            <option>Bebidas Energéticas</option><option>Aguas</option><option>Jugos</option>
+            <option>Cerveza</option><option>Vinos</option><option>Gaseosas</option><option>Snacks</option>
           </select>
           <input id="q1-cat" type="text" class="inp" placeholder="e.g. Bebidas"/>
           <button onclick="runQ1()" class="btn btn-dark btn-sm">Run</button>
@@ -754,6 +759,11 @@ const CSV_HINTS = {
   Transporte: 'Columnas requeridas: <code>id_transporte, tipo, costo, duracion_dias, estado, fecha_salida</code>'
 };
 
+const ENTITY_AGG_PROP = {
+  Supplier:'rating', Product:'precio', OrderCompra:'total',
+  Inventory:'cantidad', CentroDistribucion:'capacidad', Transporte:'costo'
+};
+
 const GRAPH_COLORS = {
   Supplier:'#0b2d34', Product:'#F06B54', OrderCompra:'#f59e0b',
   Inventory:'#10b981', CentroDistribucion:'#3b82f6', Transporte:'#8b5cf6'
@@ -807,6 +817,7 @@ function go(sec) {
   document.getElementById('page-title').textContent = titles[sec]||sec;
   if(sec==='dashboard') loadDashboard();
   if(sec==='entities') loadEnt();
+  if(sec==='relationships') loadRelationshipTypes();
   if(sec==='analytics') { loadStockouts(); loadReorder(); loadTopSup(); loadTransport(); }
 }
 
@@ -959,12 +970,14 @@ function renderEnt(data) {
   const keys = Object.keys(data[0]);
   thead.innerHTML = `<tr>${keys.map(k=>`<th>${k}</th>`).join('')}<th>Actions</th></tr>`;
   tbody.innerHTML = data.map(r=>{
-    const iv=r[idp];
-    return `<tr>${keys.map(k=>`<td title="${String(r[k]??'')}">${String(r[k]??'—')}</td>`).join('')}
-      <td style="white-space:nowrap">
-        <button onclick="openEdit('${curLabel}','${idp}','${iv}')" class="btn btn-ghost btn-xs" style="margin-right:3px">Edit</button>
-        <button onclick="delNode('${curLabel}','${idp}','${iv}')" class="btn btn-danger btn-xs">Del</button>
-      </td></tr>`;
+    const iv = r[idp];
+    const hasId = iv !== undefined && iv !== null;
+    const actions = hasId
+      ? `<button onclick="openEdit('${curLabel}','${idp}','${iv}')" class="btn btn-ghost btn-xs" style="margin-right:3px">Edit</button>
+         <button onclick="delNode('${curLabel}','${idp}','${iv}')" class="btn btn-danger btn-xs">Del</button>`
+      : `<span style="font-size:10px;color:#94a3b8;font-style:italic">no ID</span>`;
+    return `<tr style="${hasId?'':'opacity:.5'}">${keys.map(k=>`<td title="${String(r[k]??'')}">${String(r[k]??'—')}</td>`).join('')}
+      <td style="white-space:nowrap">${actions}</td></tr>`;
   }).join('');
 }
 
@@ -978,11 +991,18 @@ function entTab(btn, label) {
   btn.classList.add('active');
   curLabel = label;
   document.getElementById('ent-filter').value='';
+  // Update aggregation default property to something meaningful for this entity
+  document.getElementById('agg-prop').value = ENTITY_AGG_PROP[label] || 'id';
+  document.getElementById('agg-result').innerHTML = '';
   loadEnt();
 }
 
 // ─── CREATE NODE ──────────────────────────────────────────
-function openCreateModal(){ buildCreateFields(); openModal('modal-create'); }
+function openCreateModal(){
+  document.getElementById('c-label').value = curLabel;
+  buildCreateFields();
+  openModal('modal-create');
+}
 
 function buildCreateFields() {
   const label = document.getElementById('c-label').value;
@@ -1040,8 +1060,8 @@ async function submitEdit() {
   const rmRaw=document.getElementById('ed-rm').value.trim();
   if(!setRaw&&!rmRaw){ toast('Nothing to do — enter properties to update or remove','err'); return; }
   if(setRaw){
-    const props=parseLines(setRaw); props.id_prop=idProp;
-    const d=await api(`/api/nodes/${label}/${idVal}`,{method:'PATCH',body:JSON.stringify(props)}).catch(()=>({success:false,error:'Network error'}));
+    const body={id_prop:idProp, ...parseLines(setRaw)};
+    const d=await api(`/api/nodes/${label}/${idVal}`,{method:'PATCH',body:JSON.stringify(body)}).catch(()=>({success:false,error:'Network error'}));
     if(!d.success){ toast('Update error: '+d.error,'err'); return; }
   }
   if(rmRaw){
@@ -1064,8 +1084,8 @@ async function updateSingleNodeProps() {
   const idVal=document.getElementById('sp-id').value.trim();
   const propsRaw=document.getElementById('sp-props').value.trim();
   if(!idVal||!propsRaw){ toast('Enter an ID and at least one property','err'); return; }
-  const props=parseLines(propsRaw); props.id_prop=ID_MAP[curLabel];
-  const d=await api(`/api/nodes/${curLabel}/${idVal}`,{method:'PATCH',body:JSON.stringify(props)}).catch(()=>({success:false,error:'Network error'}));
+  const body={id_prop:ID_MAP[curLabel], ...parseLines(propsRaw)};
+  const d=await api(`/api/nodes/${curLabel}/${idVal}`,{method:'PATCH',body:JSON.stringify(body)}).catch(()=>({success:false,error:'Network error'}));
   if(d.success){ toast(`✓ Properties updated on ${curLabel} [${idVal}]`); loadEnt(); }
   else toast('Error: '+d.error,'err');
 }
@@ -1234,15 +1254,20 @@ async function loadGraph() {
 }
 
 function renderGraph(nodes, edges) {
-  // Apply colors by group
-  const styledNodes = nodes.map(n=>({
-    ...n,
-    color:{ background: GRAPH_COLORS[n.group]||'#64748b', border: '#0b2d34',
-            highlight:{ background: '#F06B54', border: '#0b2d34' } },
-    font:{ color:'#fff', size:10 },
-    borderWidth:1.5,
-    size:14,
-  }));
+  // Normalize group to the first known label so colors are always correct
+  const styledNodes = nodes.map(n=>{
+    const group = KNOWN_LABELS.has(n.group) ? n.group : 'Unknown';
+    const bg = GRAPH_COLORS[group] || '#64748b';
+    return {
+      ...n,
+      group,
+      color:{ background: bg, border: '#0b2d34',
+              highlight:{ background: '#F06B54', border: '#0b2d34' } },
+      font:{ color:'#fff', size:10 },
+      borderWidth:1.5,
+      size:14,
+    };
+  });
 
   const container=document.getElementById('graph-container');
   const data={ nodes: new vis.DataSet(styledNodes), edges: new vis.DataSet(edges) };
@@ -1295,21 +1320,24 @@ async function runQ1() {
 }
 async function runQ2() {
   const l=document.getElementById('q2-limit').value||10;
-  const d=await api(`/api/queries/top-suppliers?limit=${l}`).catch(()=>({success:false}));
+  const d=await api(`/api/queries/top-suppliers?limit=${l}`).catch(e=>({success:false,error:e.message}));
   tbl(d.success?d.data:[], 'q2-result');
-  if(d.success) toast(`Q2: ${d.data.length} suppliers returned`);
+  if(d.success) toast(`Q2: ${d.data.length} supplier${d.data.length===1?'':'s'} returned`);
+  else toast('Q2 error: '+(d.error||'unknown'),'err');
 }
 async function runQ3() {
   const l=document.getElementById('q3-limit').value||20;
-  const d=await api(`/api/queries/pending-orders?limit=${l}`).catch(()=>({success:false}));
+  const d=await api(`/api/queries/pending-orders?limit=${l}`).catch(e=>({success:false,error:e.message}));
   tbl(d.success?d.data:[], 'q3-result');
-  if(d.success) toast(`Q3: ${d.data.length} pending orders`);
+  if(d.success) toast(`Q3: ${d.data.length} pending order${d.data.length===1?'':'s'}`);
+  else toast('Q3 error: '+(d.error||'unknown'),'err');
 }
 async function runQ4() {
   const l=document.getElementById('q4-limit').value||20;
-  const d=await api(`/api/queries/transport-status?limit=${l}`).catch(()=>({success:false}));
+  const d=await api(`/api/queries/transport-status?limit=${l}`).catch(e=>({success:false,error:e.message}));
   tbl(d.success?d.data:[], 'q4-result');
-  if(d.success) toast(`Q4: ${d.data.length} transports`);
+  if(d.success) toast(`Q4: ${d.data.length} transport${d.data.length===1?'':'s'}`);
+  else toast('Q4 error: '+(d.error||'unknown'),'err');
 }
 async function runQ5() {
   const id=document.getElementById('q5-id').value.trim();
@@ -1362,6 +1390,18 @@ async function submitCsv() {
   const type=document.getElementById('csv-type').value;
   const fileInput=document.getElementById('csv-file');
   if(!fileInput.files.length){ toast('Select a CSV file first','err'); return; }
+
+  // Validate CSV columns match entity type
+  const file = fileInput.files[0];
+  const firstLine = await new Promise(res=>{ const r=new FileReader(); r.onload=e=>res(e.target.result.split('\n')[0]); r.readAsText(file); });
+  const cols = firstLine.split(',').map(c=>c.trim().replace(/\r/g,'').replace(/^"|"$/g,''));
+  const required = ENTITY_REQUIRED_COLS[type] || [];
+  const missing = required.filter(c=>!cols.includes(c));
+  if(missing.length > 0) {
+    const proceed = confirm(`⚠️ Warning: the CSV is missing these expected columns for ${type}:\n${missing.join(', ')}\n\nProceed anyway?`);
+    if(!proceed) return;
+  }
+
   const form=new FormData();
   form.append('entity_type', type);
   form.append('file', fileInput.files[0]);
@@ -1385,11 +1425,42 @@ async function submitCsv() {
   } catch(e){ result.innerHTML=`<p style="color:#dc2626;font-size:12px">Network error</p>`; toast('Network error','err'); }
 }
 
+// ─── RELATIONSHIP TYPES (dynamic) ────────────────────────
+const DEFAULT_REL_TYPES = ['SUMINISTRA','RECIBE_ORDEN','INCLUYE','SE_ENVIA_POR','ALMACENADO_EN',
+  'UBICADO_EN','LLEGA_A','SALE_DE','GESTIONA','REQUIERE','DESTINO'];
+
+async function loadRelationshipTypes() {
+  try {
+    const d = await api('/api/relationship-types');
+    const types = (d.success && d.data.length) ? d.data : DEFAULT_REL_TYPES;
+    const opts = types.map(t=>`<option value="${t}">${t}</option>`).join('');
+    // Populate all rel-type selects
+    ['cr-type','mr-type','dr-type','br-type'].forEach(id=>{
+      const el = document.getElementById(id);
+      if(el){ el.innerHTML = opts; }
+    });
+  } catch {}
+}
+
+// ─── GRAPH: fix unknown labels ────────────────────────────
+const KNOWN_LABELS = new Set(Object.keys(GRAPH_COLORS));
+
+// ─── CSV ENTITY VALIDATION ───────────────────────────────
+const ENTITY_REQUIRED_COLS = {
+  Supplier: ['id_proveedor','nombre','pais','rating','activo','categorias'],
+  Product: ['id_producto','nombre','categoria','precio','perecedero','fecha_expiracion'],
+  OrderCompra: ['id_orden','fecha_orden','estado','total','urgente','metodo_pago'],
+  Inventory: ['id_inventario','cantidad','ubicacion','capacidad_max','temperatura_controlada','fecha_actualizacion'],
+  CentroDistribucion: ['id_centro','nombre','ciudad','capacidad','activo','tipo'],
+  Transporte: ['id_transporte','tipo','costo','duracion_dias','estado','fecha_salida'],
+};
+
 // ─── INIT ─────────────────────────────────────────────────
 showCsvHint();
 buildCreateFields();
 checkHealth();
 loadDashboard();
+loadRelationshipTypes();
 </script>
 </body>
 </html>

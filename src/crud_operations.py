@@ -23,7 +23,8 @@ class CrudOperations:
             prop_string = ", ".join([f"{k}: ${k}" for k in properties.keys()])
             query = f"CREATE (n:{label} {{{prop_string}}}) RETURN n"
             result = tx.run(query, **properties)
-            return result.single()[0] if result else None
+            record = result.single()
+            return record[0] if record else None
         
         return self.conn.execute_write(_create)
     
@@ -34,7 +35,8 @@ class CrudOperations:
             prop_string = ", ".join([f"{k}: ${k}" for k in properties.keys()])
             query = f"CREATE (n:{labels_str} {{{prop_string}}}) RETURN n"
             result = tx.run(query, **properties)
-            return result.single()[0] if result else None
+            record = result.single()
+            return record[0] if record else None
         
         return self.conn.execute_write(_create)
     
@@ -113,7 +115,8 @@ class CrudOperations:
             query = f"MATCH (n:{label} {{{id_prop}: ${id_prop}}}) SET {set_string} RETURN n"
             params = {id_prop: id_value, **properties}
             result = tx.run(query, **params)
-            return result.single()[0] if result else None
+            record = result.single()
+            return record[0] if record else None
         
         return self.conn.execute_write(_update)
     
@@ -151,7 +154,8 @@ class CrudOperations:
             remove_string = ", ".join([f"n.{prop}" for prop in property_names])
             query = f"MATCH (n:{label} {{{id_prop}: ${id_prop}}}) REMOVE {remove_string} RETURN n"
             result = tx.run(query, **{id_prop: id_value})
-            return result.single()[0] if result else None
+            record = result.single()
+            return record[0] if record else None
         
         return self.conn.execute_write(_delete)
     
@@ -214,7 +218,8 @@ class CrudOperations:
                 **props
             }
             result = tx.run(query, **params)
-            return result.single()[0] if result else None
+            record = result.single()
+            return record[0] if record else None
         
         return self.conn.execute_write(_create)
     
@@ -236,7 +241,8 @@ class CrudOperations:
                 **properties
             }
             result = tx.run(query, **params)
-            return result.single()[0] if result else None
+            record = result.single()
+            return record[0] if record else None
         
         return self.conn.execute_write(_update)
     
@@ -281,7 +287,8 @@ class CrudOperations:
                 to_id_prop: to_id
             }
             result = tx.run(query, **params)
-            return result.single()[0] if result else None
+            record = result.single()
+            return record[0] if record else None
         
         return self.conn.execute_write(_delete)
     

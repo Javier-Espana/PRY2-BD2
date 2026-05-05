@@ -3,7 +3,7 @@
 import os
 import csv
 import io
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file, send_from_directory
 from flask_cors import CORS
 from .app import SupplyChainApp
 from . import schema
@@ -67,6 +67,25 @@ def dashboard():
     return send_file(FRONTEND_PATH)
 
 
+@app.route('/app/<path:filename>')
+def app_static(filename):
+    """Serve static assets from the app/ folder (icons, images, etc.)."""
+    return send_from_directory(os.path.join(BASE_DIR, '..', 'app'), filename)
+
+
+@app.route('/api/relationship-types', methods=['GET'])
+def relationship_types():
+    """Retorna todos los tipos de relaciones existentes en el grafo."""
+    try:
+        def _get(tx):
+            result = tx.run("MATCH ()-[r]-() RETURN DISTINCT type(r) AS t ORDER BY t")
+            return [rec['t'] for rec in result]
+        types = sc_app.conn.execute_read(_get)
+        return jsonify({'success': True, 'data': types}), 200
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @app.route('/api/health', methods=['GET'])
 def health():
     return jsonify({"success": True, "message": "API is running"}), 200
@@ -128,7 +147,7 @@ def list_nodes_by_label(label):
 def get_node(label, id_value):
     try:
         id_prop = request.args.get('id_prop', _id_prop_for(label))
-        node = sc_app.crud.get_node_by_id(label, id_prop, id_value)
+        node = sc_app.crud.get_node_by_id(label, id_prop, _coerce(id_value))
         if node:
             return jsonify({"success": True, "data": _s(node)}), 200
         return jsonify({"success": False, "error": "Nodo no encontrado"}), 404
@@ -139,6 +158,9 @@ def get_node(label, id_value):
 @app.route('/api/nodes/<label>/<id_value>', methods=['PATCH'])
 def update_node_props(label, id_value):
     try:
+        if id_value in ('undefined', 'null', ''):
+            return jsonify({"success": False, "error": f"ID inválido: '{id_value}'"}), 400
+        id_value = _coerce(id_value)
         data = request.get_json(silent=True) or {}
         id_prop = data.pop('id_prop', _id_prop_for(label))
         properties = data.get('properties', data)
@@ -151,8 +173,10 @@ def update_node_props(label, id_value):
 @app.route('/api/nodes/<label>/<id_value>', methods=['DELETE'])
 def delete_node(label, id_value):
     try:
+        if id_value in ('undefined', 'null', ''):
+            return jsonify({"success": False, "error": f"ID inválido: '{id_value}'"}), 400
         id_prop = request.args.get('id_prop', _id_prop_for(label))
-        ok = sc_app.crud.delete_node(label, id_prop, id_value)
+        ok = sc_app.crud.delete_node(label, id_prop, _coerce(id_value))
         return jsonify({"success": ok}), 200 if ok else 404
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
@@ -161,6 +185,7 @@ def delete_node(label, id_value):
 @app.route('/api/nodes/<label>/<id_value>/remove-properties', methods=['POST'])
 def remove_node_props(label, id_value):
     try:
+        id_value = _coerce(id_value)
         data = request.get_json(silent=True) or {}
         id_prop = data.get('id_prop', _id_prop_for(label))
         property_names = data.get('property_names', [])
@@ -612,6 +637,9 @@ def graph_sample():
     limit = request.args.get('limit', 200, type=int)
     label_filter = request.args.get('label', None)
     try:
+        _known = {'Supplier', 'Product', 'OrderCompra',
+                  'Inventory', 'CentroDistribucion', 'Transporte'}
+
         def _get(tx):
             if label_filter:
                 q = f"""
@@ -637,17 +665,19 @@ def graph_sample():
                 for nid, lbls, props in [(fid, list(rec['fl']), dict(rec['fp'])),
                                           (tid, list(rec['tl']), dict(rec['tp']))]:
                     if nid not in nodes:
-                        lbl = lbls[0] if lbls else 'Node'
+                        # Use the first known schema label for consistent coloring
+                        lbl = next((l for l in lbls if l in _known), lbls[0] if lbls else 'Node')
                         name = (props.get('nombre') or props.get('id_proveedor') or
                                 props.get('id_producto') or props.get('id_orden') or
                                 props.get('id_inventario') or props.get('id_centro') or
                                 props.get('id_transporte') or str(nid))
+                        safe_props = {k: str(v)[:40] for k, v in list(props.items())[:6]}
                         nodes[nid] = {
                             'id': nid,
                             'label': str(name)[:18],
                             'group': lbl,
                             'title': f"<b>{lbl}</b><br/>" + "<br/>".join(
-                                f"{k}: {v}" for k, v in list(props.items())[:6]
+                                f"{k}: {v}" for k, v in safe_props.items()
                             )
                         }
                 edges.append({'from': fid, 'to': tid, 'label': rec['rt'],
@@ -664,7 +694,7 @@ def graph_sample():
 
 @app.route('/api/import/csv', methods=['POST'])
 def import_csv():
-    """Importa nodos desde un archivo CSV."""
+    """Importa nodos desde un archivo CSV usando UNWIND batch."""
     try:
         entity_type = request.form.get('entity_type', 'Supplier')
         f = request.files.get('file')
@@ -672,22 +702,21 @@ def import_csv():
             return jsonify({'success': False, 'error': 'No se proporcionó archivo CSV'}), 400
         content = f.read().decode('utf-8-sig')
         reader = csv.DictReader(io.StringIO(content))
-        created, errors = 0, []
-        for i, row in enumerate(reader):
-            props = {}
-            for k, v in row.items():
-                k = (k or '').strip()
-                v = (v or '').strip()
-                if k and v:
-                    props[k] = _coerce(v)
-            if not props:
-                continue
-            try:
-                sc_app.crud.create_node_single_label(entity_type, props)
-                created += 1
-            except Exception as e:
-                errors.append(f"Fila {i + 2}: {str(e)[:100]}")
-        return jsonify({'success': True, 'created': created, 'errors': errors[:5]}), 200
+        rows = []
+        for row in reader:
+            props = {k.strip(): _coerce(v.strip())
+                     for k, v in row.items()
+                     if k and k.strip() and v and v.strip()}
+            if props:
+                rows.append(props)
+        if not rows:
+            return jsonify({'success': False, 'error': 'CSV vacío o sin filas válidas'}), 400
+
+        def _batch(tx):
+            tx.run(f"UNWIND $rows AS row CREATE (n:{entity_type}) SET n = row", rows=rows)
+
+        sc_app.conn.execute_write(_batch)
+        return jsonify({'success': True, 'created': len(rows), 'errors': []}), 200
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
