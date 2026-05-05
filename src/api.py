@@ -208,6 +208,77 @@ def list_transports():
         return jsonify({"success": False, "error": str(e)}), 500
 
 
+# ============ QUERIES Y ANALYTICS ============
+
+@app.route('/api/queries/products-by-category/<category>', methods=['GET'])
+def query_products_by_category(category):
+    try:
+        data = sc_app.products_by_category(category)
+        return jsonify({"success": True, "data": data}), 200
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route('/api/queries/top-suppliers', methods=['GET'])
+def query_top_suppliers():
+    try:
+        limit = request.args.get('limit', 10, type=int)
+        data = sc_app.top_suppliers_by_rating(limit)
+        return jsonify({"success": True, "data": data}), 200
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route('/api/queries/pending-orders', methods=['GET'])
+def query_pending_orders():
+    try:
+        limit = request.args.get('limit', 50, type=int)
+        data = sc_app.pending_orders(limit)
+        return jsonify({"success": True, "data": data}), 200
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route('/api/queries/transport-status', methods=['GET'])
+def query_transport_status():
+    try:
+        limit = request.args.get('limit', 50, type=int)
+        data = sc_app.transport_status(limit)
+        return jsonify({"success": True, "data": data}), 200
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route('/api/analytics/stockouts', methods=['GET'])
+def analytics_stockouts():
+    try:
+        limit = request.args.get('limit', 10, type=int)
+        data = sc_app.detect_stockouts(limit)
+        return jsonify({"success": True, "data": data}), 200
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route('/api/analytics/reorder', methods=['GET'])
+def analytics_reorder():
+    try:
+        limit = request.args.get('limit', 10, type=int)
+        data = sc_app.suggest_reorder(limit)
+        return jsonify({"success": True, "data": data}), 200
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route('/api/analytics/top-suppliers', methods=['GET'])
+def analytics_top_suppliers():
+    try:
+        limit = request.args.get('limit', 10, type=int)
+        data = sc_app.top_suppliers_by_volume(limit)
+        return jsonify({"success": True, "data": data}), 200
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
 @app.route('/api/health', methods=['GET'])
 def health():
     return jsonify({"success": True, "message": "API is running"}), 200

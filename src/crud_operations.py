@@ -38,10 +38,6 @@ class CrudOperations:
         
         return self.conn.execute_write(_create)
     
-    def create_user(self, user_data: Dict) -> Dict:
-        """Crear un usuario."""
-        return self.create_node_single_label(schema.LABEL_USER, user_data)
-    
     def create_supplier(self, supplier_data: Dict) -> Dict:
         """Crear un proveedor (Supplier)."""
         return self.create_node_single_label(schema.LABEL_SUPPLIER, supplier_data)
@@ -79,25 +75,23 @@ class CrudOperations:
         return dict(result[0]) if result else None
     
     def get_nodes_by_filter(self, label: str, filters: Dict) -> List[Dict]:
-        """Obtener múltiples nodos con filtros."""
+        """Obtener multiples nodos con filtros."""
         def _get(tx):
             filter_string = " AND ".join([f"n.{k} = ${k}" for k in filters.keys()])
             query = f"MATCH (n:{label}) WHERE {filter_string} RETURN n"
             result = tx.run(query, **filters)
-            return result
+            return [dict(record[0]) for record in result]
         
-        records = self.conn.execute_read(_get)
-        return [dict(record[0]) for record in records] if records else []
+        return self.conn.execute_read(_get)
     
     def get_all_nodes(self, label: str) -> List[Dict]:
         """Obtener todos los nodos de un tipo."""
         def _get(tx):
             query = f"MATCH (n:{label}) RETURN n LIMIT 1000"
             result = tx.run(query)
-            return result
+            return [dict(record[0]) for record in result]
         
-        records = self.conn.execute_read(_get)
-        return [dict(record[0]) for record in records] if records else []
+        return self.conn.execute_read(_get)
     
     def get_node_aggregation(self, label: str, agg_func: str, prop: str) -> Any:
         """Realizar agregaciones sobre propiedades de nodos."""
