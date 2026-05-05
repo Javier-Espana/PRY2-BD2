@@ -14,6 +14,7 @@ class Neo4jConfig:
     uri: str = os.getenv("NEO4J_URI", "bolt://localhost:7687")
     user: str = os.getenv("NEO4J_USER", "neo4j")
     password: str = os.getenv("NEO4J_PASSWORD", "password")
+    database: str = os.getenv("NEO4J_DATABASE", "neo4j")
 
 
 def get_config() -> Neo4jConfig:

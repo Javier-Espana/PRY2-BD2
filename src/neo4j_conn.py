@@ -10,7 +10,15 @@ from .config import get_config
 class Neo4jConnection:
     def __init__(self, config=None):
         self.config = config or get_config()
-        self._driver = GraphDatabase.driver(self.config.uri, auth=(self.config.user, self.config.password))
+        self._driver = GraphDatabase.driver(
+            self.config.uri,
+            auth=(self.config.user, self.config.password),
+        )
+
+    def _session_args(self):
+        """Argumentos comunes para cada sesion, incluyendo database si aplica."""
+        db = self.config.database
+        return {"database": db} if db else {}
 
     def close(self):
         if hasattr(self, "_driver") and self._driver:
@@ -26,13 +34,13 @@ class Neo4jConnection:
             ) from exc
 
     def execute_write(self, fn: Callable, *args, **kwargs) -> Any:
-        with self._driver.session() as session:
+        with self._driver.session(**self._session_args()) as session:
             if hasattr(session, "execute_write"):
                 return session.execute_write(lambda tx: fn(tx, *args, **kwargs))
             return session.write_transaction(lambda tx: fn(tx, *args, **kwargs))
 
     def execute_read(self, fn: Callable, *args, **kwargs) -> Any:
-        with self._driver.session() as session:
+        with self._driver.session(**self._session_args()) as session:
             if hasattr(session, "execute_read"):
                 return session.execute_read(lambda tx: fn(tx, *args, **kwargs))
             return session.read_transaction(lambda tx: fn(tx, *args, **kwargs))
