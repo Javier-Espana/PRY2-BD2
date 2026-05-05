@@ -1,152 +1,100 @@
-# Proyecto: Neo4j — Cadena de Suministro (Supply Chain)
+# Neo4j Supply Chain — PRY2-BD2
 
-**Estado**: Completado — cubre todos los criterios de la rubrica base
+Sistema de cadena de suministros (bebidas/distribución) sobre Neo4j con API REST, dashboard web y consola interactiva. Cubre todos los criterios de la rúbrica CC3089.
 
-Sistema de cadena de suministros implementado en Neo4j con generacion
-de datos, importacion CSV, CRUD completo de nodos y relaciones, 6 consultas
-Cypher, 4 analytics de data science y API REST.
-
-## Estructura del Proyecto
-
-```
-PRY2-BD2/
-├── src/
-│   ├── app.py                    # Fachada SupplyChainApp
-│   ├── api.py                    # API REST (Flask)
-│   ├── console.py                # Consola interactiva con menus
-│   ├── demo.py                   # Demo CLI automatizada
-│   ├── schema.py                 # Esquema: 6 labels, 11 relaciones
-│   ├── crud_operations.py        # CRUD generico reutilizable
-│   ├── queries.py                # 5 consultas Cypher
-│   ├── recommendation.py         # Analytics engine (Data Science)
-│   ├── data_generator.py         # Generador CSV (5,410+ nodos)
-│   ├── importer.py               # Importador Python-driven (UNWIND)
-│   ├── neo4j_conn.py             # Conexion Neo4j
-│   └── config.py                 # Configuracion desde .env
-├── tests/
-│   ├── conftest.py               # Fixtures compartidos
-│   ├── unit/                     # Pruebas sin Neo4j
-│   └── integration/              # Pruebas con Neo4j real
-├── main.py                       # Entry point unificado
-├── requirements.txt
-└── README.md
-```
-
-## Inicio Rapido
-
-### 1. Instalar dependencias
+## Setup
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. Configurar `.env`
-
-```bash
-# Neo4j local
-NEO4J_URI=bolt://localhost:7687
+Crea `.env` (copia `.env.example`):
+```
+NEO4J_URI=neo4j+s://<host>
 NEO4J_USER=neo4j
-NEO4J_PASSWORD=your_password
+NEO4J_PASSWORD=<password>
 NEO4J_DATABASE=neo4j
 ```
 
-Para AuraDB, usa las credenciales de tu instancia (`neo4j+s://...`).
-
-### 3. Verificar conexion
-
-```bash
-python main.py --mode check
-```
-
-### 4. Inicializar la base de datos
-
-```bash
-python main.py --mode init
-```
-
-Esto genera +5,400 nodos y +70,000 relaciones, los importa y crea indices.
-
 ## Comandos
 
-```bash
-# Verificar conexion, stats y grafo conexo
-python main.py --mode check
-
-# Verificar si el grafo es conexo
-python main.py --mode connected
-
-# Inicializar base de datos (generar + importar)
-python main.py --mode init
-python main.py --mode init --keep-data   # sin limpiar datos previos
-
-# Consola interactiva con menus (recomendada)
-python main.py --mode console
-
-# Demo automatizada (recorre toda la rubrica)
-python main.py --mode demo
-
-# API REST + dashboard web
-python main.py --mode api
-# Abrir: http://localhost:5000/
-
-# Ejecutar tests
-python main.py --mode test
-```
-
-## Consola Interactiva
-
-```bash
-python main.py --mode console
-```
-
-Menus navegables con numeros:
-
-- **Menu Principal**: init, stats, CRUD nodos, CRUD relaciones, consultas, analytics, demo automatica, grafo conexo
-- **CRUD Nodos**: crear 1/2+ labels, consultar, listar, filtrar, agregar/actualizar/eliminar propiedades, eliminar, agregaciones
-- **CRUD Relaciones**: crear con 3+ props, agregar/actualizar/eliminar propiedades, eliminar
-- **Consultas**: productos por categoria, inventario, top suppliers, ordenes pendientes, transportes
-- **Analytics**: stockouts, reorder, top suppliers por volumen, resumen transportes
+| Comando | Descripción |
+|---|---|
+| `python main.py --mode check` | Verificar conexión y estadísticas |
+| `python main.py --mode init` | Generar e importar 5,400+ nodos |
+| `python main.py --mode api` | Iniciar API REST + dashboard en `http://localhost:5000` |
+| `python main.py --mode console` | Consola interactiva con menús |
+| `python main.py --mode demo` | Demo automatizada de toda la rúbrica |
+| `python main.py --mode test` | Ejecutar suite de tests |
 
 ## API Endpoints
 
-```
-POST   /api/init                              Inicializar BD
-GET    /api/stats                             Estadisticas del grafo
-GET    /api/suppliers                         Listar proveedores
-POST   /api/suppliers                         Crear proveedor
-GET    /api/suppliers/<id>                    Detalle proveedor
-GET    /api/products                          Listar productos
-GET    /api/products/<id>                     Detalle producto
-GET    /api/orders                            Listar ordenes
-GET    /api/inventories                       Listar inventarios
-GET    /api/centers                           Listar centros
-GET    /api/transports                        Listar transportes
-GET    /api/queries/products-by-category/<c>  Productos por categoria
-GET    /api/queries/top-suppliers             Top proveedores rating
-GET    /api/queries/pending-orders            Ordenes pendientes
-GET    /api/queries/transport-status          Estado transportes
-GET    /api/analytics/stockouts               Bajo inventario
-GET    /api/analytics/reorder                 Sugerencia reorden
-GET    /api/analytics/top-suppliers           Top suppliers volumen
-GET    /api/health                            Health check
-```
+**Base:** `http://localhost:5000`
 
-## Tests
+### Nodos genéricos
+| Método | Ruta | Descripción |
+|---|---|---|
+| `POST` | `/api/nodes` | Crear nodo (1 ó 2+ labels, con propiedades) |
+| `GET` | `/api/nodes/<label>` | Listar nodos por label |
+| `GET` | `/api/nodes/<label>/<id>` | Obtener nodo por ID |
+| `PATCH` | `/api/nodes/<label>/<id>` | Agregar/actualizar propiedades |
+| `DELETE` | `/api/nodes/<label>/<id>` | Eliminar nodo |
+| `POST` | `/api/nodes/<label>/<id>/remove-properties` | Eliminar propiedades específicas |
+| `POST` | `/api/nodes/<label>/bulk/update` | Actualizar props en múltiples nodos |
+| `POST` | `/api/nodes/<label>/bulk/delete` | Eliminar múltiples nodos |
+| `POST` | `/api/nodes/<label>/bulk/remove-properties` | Eliminar props de múltiples nodos |
+| `GET` | `/api/nodes/<label>/aggregations` | COUNT / AVG / MAX / MIN / SUM |
 
-```bash
-python main.py --mode test
-# o directo:
-python -m pytest tests/ -v
-```
+### Entidades específicas
+`GET/POST /api/suppliers` · `GET/DELETE /api/suppliers/<id>`  
+`GET/POST /api/products` · `GET/DELETE /api/products/<id>`  
+`GET/POST /api/orders` · `GET/POST /api/inventories`  
+`GET/POST /api/centers` · `GET/POST /api/transports`
 
-## Rubrica
+### Relaciones
+| Método | Ruta | Descripción |
+|---|---|---|
+| `POST` | `/api/relationships` | Crear relación con ≥3 propiedades |
+| `PATCH` | `/api/relationships` | Agregar/actualizar propiedades |
+| `DELETE` | `/api/relationships` | Eliminar relación |
+| `POST` | `/api/relationships/remove-properties` | Eliminar props de relación |
+| `POST` | `/api/relationships/bulk/update` | Actualizar props en múltiples relaciones |
+| `POST` | `/api/relationships/bulk/remove-properties` | Eliminar props de múltiples relaciones |
+| `POST` | `/api/relationships/bulk/delete` | Eliminar múltiples relaciones |
 
-- 6 labels con 6 propiedades cada una
-- 11 tipos de relaciones con 3+ propiedades cada una
-- Tipos: String, Integer, Float, Boolean, List, Date
-- Carga CSV, 5,410+ nodos, grafo conexo
-- CRUD completo de nodos y relaciones
-- 6 consultas Cypher funcionales
-- 4 analytics de Data Science
-- API REST funcional con dashboard HTML
-- Consola interactiva con menus
+### Consultas y analytics
+| Ruta | Descripción |
+|---|---|
+| `GET /api/queries/products-by-category/<cat>` | Productos por categoría |
+| `GET /api/queries/top-suppliers` | Top proveedores por rating |
+| `GET /api/queries/pending-orders` | Órdenes pendientes |
+| `GET /api/queries/transport-status` | Estado de transportes |
+| `GET /api/queries/inventory-for-product/<id>` | Inventario por producto |
+| `GET /api/analytics/stockouts` | Detección de quiebres de stock |
+| `GET /api/analytics/reorder` | Sugerencias de reorden |
+| `GET /api/analytics/top-suppliers` | Top proveedores por volumen |
+| `GET /api/analytics/transport-overview` | Resumen de transportes |
+| `GET /api/stats` | Estadísticas del grafo |
+| `POST /api/init` | Inicializar base de datos |
+
+## Rúbrica cubierta
+
+| Categoría | Criterio | ✓ |
+|---|---|---|
+| Modelado | Caso de uso: cadena de suministros | ✓ |
+| Modelado | 6 labels distintas con 6+ propiedades cada una | ✓ |
+| Modelado | 11 tipos de relaciones con 3+ propiedades | ✓ |
+| Modelado | Todos los tipos de datos (String, Float, Integer, Boolean, List, Date) | ✓ |
+| Set de datos | Carga CSV (5,410+ nodos, grafo conexo) | ✓ |
+| App | Crear nodo con 1 label | ✓ |
+| App | Crear nodo con 2+ labels | ✓ |
+| App | Crear nodo con 5+ propiedades | ✓ |
+| App | Visualización de nodos (1, muchos, agregados) | ✓ |
+| App | Gestión de propiedades en nodos (add/update/remove single y bulk) | ✓ |
+| App | Creación de relación con 3+ propiedades | ✓ |
+| App | Gestión de relaciones (add/update/remove single y bulk) | ✓ |
+| App | Eliminación de nodos (1 y múltiples) | ✓ |
+| App | Eliminación de relaciones (1 y múltiples) | ✓ |
+| App | 6 consultas Cypher parametrizables | ✓ |
+| Extras | 4 algoritmos de Data Science | ✓ |
+| Extras | Interfaz gráfica (dashboard web funcional) | ✓ |

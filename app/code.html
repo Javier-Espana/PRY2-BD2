@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SupplyChain Intelligence</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "background": "#f9f9fd",
+        "surface-bright": "#f9f9fd",
+        "outline-variant": "#c1c8ca",
+        "outline": "#71787a",
+        "primary-fixed": "#c0e9f5",
+        "surface-dim": "#d9dadd",
+        "surface-container-high": "#e8e8ec",
+        "on-surface": "#1a1c1f",
+        "on-primary-container": "#7ca4ae",
+        "surface-container-low": "#f3f3f7",
+        "primary-container": "#0e3a43",
+        "secondary-container": "#ece2cb",
+        "surface": "#f9f9fd",
+        "surface-container-highest": "#e2e2e6",
+        "on-background": "#1a1c1f",
+        "primary": "#00242b",
+        "on-surface-variant": "#41484a",
+        "surface-container": "#ededf1",
+        "surface-container-lowest": "#ffffff",
+        "tertiary": "#470300",
+        "error": "#ba1a1a",
+        "on-primary": "#ffffff",
+        "on-secondary": "#ffffff",
+        "secondary": "#645e4c",
+        "surface-variant": "#e2e2e6"
+      },
+      fontFamily: {
+        "body-lg": ["Source Sans 3"],
+        "label-caps": ["Sora"],
+        "h2": ["Sora"], "h1": ["Sora"], "h3": ["Sora"],
+        "body-sm": ["Source Sans 3"], "body-md": ["Source Sans 3"]
+      },
+      fontSize: {
+        "body-lg": ["18px", { lineHeight: "1.6", fontWeight: "400" }],
+        "label-caps": ["12px", { lineHeight: "1", letterSpacing: "0.05em", fontWeight: "700" }],
+        "h2": ["32px", { lineHeight: "1.2", fontWeight: "600" }],
+        "h1": ["40px", { lineHeight: "1.2", letterSpacing: "-0.02em", fontWeight: "600" }],
+        "body-sm": ["14px", { lineHeight: "1.4", fontWeight: "400" }],
+        "h3": ["24px", { lineHeight: "1.3", fontWeight: "500" }],
+        "body-md": ["16px", { lineHeight: "1.5", fontWeight: "400" }]
+      }
+    }
+  }
+}
+</script>
+<style>
+.industrial-bg { background-color:#f9f9fd; background-image:radial-gradient(#d9dadd 1px,transparent 1px); background-size:24px 24px; }
+.text-coral { color:#F06B54; } .bg-coral { background-color:#F06B54; } .border-coral { border-color:#F06B54; }
+.bg-petroleum { background-color:#0E3A43; } .text-petroleum { color:#0E3A43; } .border-petroleum { border-color:#0E3A43; }
+.bg-warm-sand { background-color:#F3E9D2; }
+.nav-link { display:flex; align-items:center; gap:12px; padding:12px 16px; color:#94a3b8; border-radius:8px; cursor:pointer; transition:all .2s; }
+.nav-link:hover { color:#fff; background:rgba(255,255,255,.07); }
+.nav-link.active { color:#fff; background:rgba(255,255,255,.12); border-left:3px solid #FF7F50; padding-left:13px; }
+.section { display:none; } .section.active { display:block; }
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:200; align-items:center; justify-content:center; }
+.modal-overlay.open { display:flex; }
+.toast { position:fixed; bottom:24px; right:24px; z-index:500; padding:12px 20px; border-radius:8px; font-size:14px; font-family:'Source Sans 3'; font-weight:600; transform:translateY(60px); opacity:0; transition:all .3s; pointer-events:none; }
+.toast.show { transform:translateY(0); opacity:1; }
+.toast.success { background:#10b981; color:#fff; }
+.toast.error { background:#ef4444; color:#fff; }
+.tab-btn { padding:8px 16px; border-radius:6px; font-size:13px; font-weight:600; font-family:'Sora'; cursor:pointer; transition:all .2s; color:#64748b; }
+.tab-btn.active { background:#0E3A43; color:#fff; }
+.result-table { width:100%; border-collapse:collapse; font-size:13px; }
+.result-table th { background:#f1f5f9; padding:8px 12px; text-align:left; font-family:'Sora'; font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:#64748b; border-bottom:1px solid #e2e8f0; }
+.result-table td { padding:8px 12px; border-bottom:1px solid #f1f5f9; color:#1a1c1f; vertical-align:top; }
+.result-table tr:hover td { background:#f8fafc; }
+.input-field { width:100%; padding:8px 12px; border:1px solid #c1c8ca; border-radius:6px; font-size:14px; font-family:'Source Sans 3'; outline:none; transition:border .2s; }
+.input-field:focus { border-color:#0E3A43; box-shadow:0 0 0 2px rgba(14,58,67,.1); }
+.btn-primary { background:#0E3A43; color:#fff; padding:8px 18px; border-radius:6px; font-size:13px; font-weight:600; font-family:'Sora'; cursor:pointer; transition:opacity .2s; border:none; }
+.btn-primary:hover { opacity:.88; }
+.btn-secondary { background:#f1f5f9; color:#334155; padding:8px 16px; border-radius:6px; font-size:13px; font-weight:600; font-family:'Sora'; cursor:pointer; border:1px solid #e2e8f0; transition:all .2s; }
+.btn-secondary:hover { background:#e2e8f0; }
+.btn-danger { background:#ef4444; color:#fff; padding:6px 12px; border-radius:5px; font-size:12px; font-weight:600; cursor:pointer; border:none; transition:opacity .2s; }
+.btn-danger:hover { opacity:.85; }
+.btn-sm { background:#0E3A43; color:#fff; padding:5px 12px; border-radius:5px; font-size:12px; font-weight:600; cursor:pointer; border:none; transition:opacity .2s; }
+.btn-sm:hover { opacity:.85; }
+.card { background:#fff; border:1px solid #c1c8ca; border-radius:12px; padding:20px; box-shadow:0 2px 12px rgba(14,58,67,.04); }
+.label-tag { display:inline-block; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:700; font-family:'Sora'; }
+.loading-spin { display:inline-block; width:16px; height:16px; border:2px solid rgba(255,255,255,.3); border-top-color:#fff; border-radius:50%; animation:spin .7s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+select.input-field { appearance:auto; }
+</style>
+</head>
+<body class="bg-background text-on-background font-body-md industrial-bg antialiased min-h-screen flex">
+
+<!-- SIDEBAR -->
+<nav class="bg-[#0E3A43] text-white font-['Sora'] h-screen w-64 fixed left-0 top-0 flex flex-col z-50 shadow-xl">
+  <div class="p-6 border-b border-white/10">
+    <h1 class="text-xl font-bold mb-1">SupplyChain</h1>
+    <p class="text-slate-400 text-xs uppercase tracking-wider">Neo4j Intelligence</p>
+  </div>
+  <div class="flex flex-col gap-1 p-4 mt-2 flex-grow">
+    <div class="nav-link active" onclick="navigate('dashboard')">
+      <span class="material-symbols-outlined text-xl" style="font-variation-settings:'FILL' 1">dashboard</span>
+      <span>Dashboard</span>
+    </div>
+    <div class="nav-link" onclick="navigate('entities')">
+      <span class="material-symbols-outlined text-xl">account_tree</span>
+      <span>Entities</span>
+    </div>
+    <div class="nav-link" onclick="navigate('relationships')">
+      <span class="material-symbols-outlined text-xl">device_hub</span>
+      <span>Relationships</span>
+    </div>
+    <div class="nav-link" onclick="navigate('queries')">
+      <span class="material-symbols-outlined text-xl">terminal</span>
+      <span>Cypher Queries</span>
+    </div>
+    <div class="nav-link" onclick="navigate('analytics')">
+      <span class="material-symbols-outlined text-xl">leaderboard</span>
+      <span>Analytics</span>
+    </div>
+  </div>
+  <div class="p-4 border-t border-white/10 text-xs text-slate-400">
+    <span id="db-status-side" class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-slate-500"></span>Connecting...</span>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="flex-1 flex flex-col ml-64 min-h-screen">
+
+  <!-- TOPBAR -->
+  <header class="bg-white/90 backdrop-blur-md h-16 w-full sticky top-0 z-40 border-b border-slate-200 shadow-sm flex justify-between items-center px-6">
+    <div class="flex items-center gap-3">
+      <h2 id="page-title" class="text-lg font-['Sora'] font-bold text-[#0E3A43]">Dashboard</h2>
+      <span id="db-status-badge" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 text-slate-500 text-xs font-bold font-['Sora'] border border-slate-200">
+        <span class="w-2 h-2 rounded-full bg-slate-400"></span>Checking...
+      </span>
+    </div>
+    <div class="flex items-center gap-3">
+      <button onclick="initDatabase()" class="btn-primary flex items-center gap-2">
+        <span class="material-symbols-outlined text-sm">refresh</span> Initialize DB
+      </button>
+    </div>
+  </header>
+
+  <main class="flex-1 p-8 pb-24 overflow-y-auto">
+
+    <!-- ======================== DASHBOARD ======================== -->
+    <div id="section-dashboard" class="section active">
+      <div class="mb-6">
+        <h1 class="font-['Sora'] text-3xl font-semibold text-on-background mb-1">Dashboard Overview</h1>
+        <p class="text-slate-500 text-sm">Graph database metrics in real time</p>
+      </div>
+
+      <!-- Stats cards -->
+      <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
+        <div class="card text-center"><div class="text-xs text-slate-500 font-['Sora'] uppercase tracking-wider mb-1">Total Nodes</div><div class="text-2xl font-bold text-petroleum" id="stat-nodes">—</div></div>
+        <div class="card text-center"><div class="text-xs text-slate-500 font-['Sora'] uppercase tracking-wider mb-1">Relationships</div><div class="text-2xl font-bold text-petroleum" id="stat-rels">—</div></div>
+        <div class="card text-center"><div class="text-xs text-slate-500 font-['Sora'] uppercase tracking-wider mb-1">Suppliers</div><div class="text-2xl font-bold text-petroleum" id="stat-suppliers">—</div></div>
+        <div class="card text-center"><div class="text-xs text-slate-500 font-['Sora'] uppercase tracking-wider mb-1">Products</div><div class="text-2xl font-bold text-petroleum" id="stat-products">—</div></div>
+        <div class="card text-center"><div class="text-xs text-slate-500 font-['Sora'] uppercase tracking-wider mb-1">Orders</div><div class="text-2xl font-bold text-petroleum" id="stat-orders">—</div></div>
+        <div class="card text-center"><div class="text-xs text-slate-500 font-['Sora'] uppercase tracking-wider mb-1">Dist. Centers</div><div class="text-2xl font-bold text-petroleum" id="stat-centers">—</div></div>
+      </div>
+
+      <div class="grid grid-cols-1 xl:grid-cols-12 gap-4">
+        <!-- Entity table -->
+        <div class="xl:col-span-8 card p-0 overflow-hidden">
+          <div class="px-5 pt-4 pb-0 border-b border-slate-100 flex items-center justify-between">
+            <div class="flex gap-4">
+              <button class="tab-btn active pb-3" onclick="dashTab(this,'suppliers')">Suppliers</button>
+              <button class="tab-btn pb-3" onclick="dashTab(this,'products')">Products</button>
+              <button class="tab-btn pb-3" onclick="dashTab(this,'orders')">Orders</button>
+            </div>
+            <input type="text" placeholder="Filter..." class="input-field w-40 text-xs py-1.5 mb-2" oninput="filterDashTable(this.value)"/>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="result-table" id="dash-table">
+              <thead id="dash-thead"><tr></tr></thead>
+              <tbody id="dash-tbody"><tr><td colspan="4" class="text-center py-8 text-slate-400">Loading...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Analytics sidebar -->
+        <div class="xl:col-span-4 flex flex-col gap-4">
+          <!-- Top suppliers chart -->
+          <div class="card">
+            <h3 class="font-['Sora'] font-semibold text-on-surface mb-3">Top Suppliers by Volume</h3>
+            <div id="top-suppliers-chart" class="space-y-3 text-slate-400 text-sm">Loading...</div>
+          </div>
+          <!-- Stockout risks -->
+          <div class="card">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="font-['Sora'] font-semibold text-on-surface">Stockout Risks</h3>
+              <span class="label-tag bg-red-50 text-red-600 border border-red-200">Critical</span>
+            </div>
+            <div id="stockout-list" class="space-y-2 text-slate-400 text-sm">Loading...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================== ENTITIES ======================== -->
+    <div id="section-entities" class="section">
+      <div class="mb-6 flex items-center justify-between">
+        <div>
+          <h1 class="font-['Sora'] text-3xl font-semibold mb-1">Entities</h1>
+          <p class="text-slate-500 text-sm">CRUD completo de nodos — crear, visualizar, gestionar propiedades, eliminar</p>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="openCreateModal()" class="btn-primary flex items-center gap-1"><span class="material-symbols-outlined text-sm">add</span> Create Node</button>
+          <button onclick="openMultiLabelModal()" class="btn-secondary flex items-center gap-1"><span class="material-symbols-outlined text-sm">label</span> 2+ Labels</button>
+        </div>
+      </div>
+
+      <!-- Entity tabs -->
+      <div class="flex gap-2 mb-4 flex-wrap">
+        <button class="tab-btn active" onclick="entTab(this,'Supplier')">Suppliers</button>
+        <button class="tab-btn" onclick="entTab(this,'Product')">Products</button>
+        <button class="tab-btn" onclick="entTab(this,'OrderCompra')">Orders</button>
+        <button class="tab-btn" onclick="entTab(this,'Inventory')">Inventories</button>
+        <button class="tab-btn" onclick="entTab(this,'CentroDistribucion')">Centers</button>
+        <button class="tab-btn" onclick="entTab(this,'Transporte')">Transports</button>
+      </div>
+
+      <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+        <!-- Main table -->
+        <div class="xl:col-span-2 card p-0 overflow-hidden">
+          <div class="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
+            <span class="font-['Sora'] font-semibold text-sm text-petroleum" id="ent-label-title">Suppliers</span>
+            <div class="flex gap-2 items-center">
+              <input id="ent-filter" type="text" placeholder="Filter rows..." class="input-field w-40 text-xs py-1.5" oninput="filterEntTable(this.value)"/>
+              <button onclick="loadEntities()" class="btn-sm"><span class="material-symbols-outlined text-sm">refresh</span></button>
+            </div>
+          </div>
+          <div class="overflow-x-auto" style="max-height:400px">
+            <table class="result-table" id="ent-table">
+              <thead id="ent-thead"><tr></tr></thead>
+              <tbody id="ent-tbody"><tr><td colspan="6" class="text-center py-8 text-slate-400">Select an entity type above</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Operations panel -->
+        <div class="flex flex-col gap-3">
+          <!-- Aggregations -->
+          <div class="card">
+            <h4 class="font-['Sora'] font-semibold text-sm text-petroleum mb-2">Aggregations</h4>
+            <div class="flex gap-2 mb-2">
+              <select id="agg-func" class="input-field text-xs py-1.5">
+                <option>COUNT</option><option>AVG</option><option>MAX</option><option>MIN</option><option>SUM</option>
+              </select>
+              <input id="agg-prop" type="text" placeholder="property" class="input-field text-xs py-1.5" value="rating"/>
+            </div>
+            <button onclick="runAggregation()" class="btn-primary w-full text-xs py-1.5">Run Aggregation</button>
+            <div id="agg-result" class="mt-2 text-sm text-slate-600 font-mono"></div>
+          </div>
+
+          <!-- Bulk update props -->
+          <div class="card">
+            <h4 class="font-['Sora'] font-semibold text-sm text-petroleum mb-2">Bulk Update Properties</h4>
+            <input id="bulk-filter-prop" type="text" placeholder="filter property (e.g. pais)" class="input-field text-xs py-1.5 mb-1"/>
+            <input id="bulk-filter-vals" type="text" placeholder="values (comma-sep, e.g. USA,China)" class="input-field text-xs py-1.5 mb-1"/>
+            <input id="bulk-new-prop" type="text" placeholder="new property name" class="input-field text-xs py-1.5 mb-1"/>
+            <input id="bulk-new-val" type="text" placeholder="new property value" class="input-field text-xs py-1.5 mb-1"/>
+            <button onclick="bulkUpdateProps()" class="btn-primary w-full text-xs py-1.5">Bulk Update</button>
+          </div>
+
+          <!-- Bulk remove props -->
+          <div class="card">
+            <h4 class="font-['Sora'] font-semibold text-sm text-petroleum mb-2">Bulk Remove Properties</h4>
+            <input id="bulk-rm-filter-prop" type="text" placeholder="filter property" class="input-field text-xs py-1.5 mb-1"/>
+            <input id="bulk-rm-filter-vals" type="text" placeholder="values (comma-sep)" class="input-field text-xs py-1.5 mb-1"/>
+            <input id="bulk-rm-props" type="text" placeholder="props to remove (comma-sep)" class="input-field text-xs py-1.5 mb-1"/>
+            <button onclick="bulkRemoveProps()" class="btn-primary w-full text-xs py-1.5">Bulk Remove Props</button>
+          </div>
+
+          <!-- Bulk delete nodes -->
+          <div class="card border-red-100">
+            <h4 class="font-['Sora'] font-semibold text-sm text-red-600 mb-2">Bulk Delete Nodes</h4>
+            <input id="bulk-del-filter-prop" type="text" placeholder="filter property" class="input-field text-xs py-1.5 mb-1"/>
+            <input id="bulk-del-filter-vals" type="text" placeholder="values (comma-sep)" class="input-field text-xs py-1.5 mb-1"/>
+            <button onclick="bulkDeleteNodes()" class="btn-danger w-full text-xs py-1.5">Bulk Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================== RELATIONSHIPS ======================== -->
+    <div id="section-relationships" class="section">
+      <div class="mb-6">
+        <h1 class="font-['Sora'] text-3xl font-semibold mb-1">Relationships</h1>
+        <p class="text-slate-500 text-sm">Crear, gestionar propiedades y eliminar relaciones entre nodos</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <!-- Create relationship -->
+        <div class="card">
+          <h3 class="font-['Sora'] font-semibold text-petroleum mb-4 flex items-center gap-2"><span class="material-symbols-outlined">add_link</span> Create Relationship</h3>
+          <div class="grid grid-cols-2 gap-2 mb-2">
+            <div>
+              <label class="text-xs text-slate-500 font-['Sora'] uppercase mb-1 block">From Label</label>
+              <select id="rel-from-label" class="input-field text-sm">
+                <option>Supplier</option><option>Product</option><option>OrderCompra</option>
+                <option>Inventory</option><option>CentroDistribucion</option><option>Transporte</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs text-slate-500 font-['Sora'] uppercase mb-1 block">From ID</label>
+              <input id="rel-from-id" type="text" placeholder="e.g. 1" class="input-field text-sm"/>
+            </div>
+            <div>
+              <label class="text-xs text-slate-500 font-['Sora'] uppercase mb-1 block">To Label</label>
+              <select id="rel-to-label" class="input-field text-sm">
+                <option>Product</option><option>Supplier</option><option>OrderCompra</option>
+                <option>Inventory</option><option>CentroDistribucion</option><option>Transporte</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs text-slate-500 font-['Sora'] uppercase mb-1 block">To ID</label>
+              <input id="rel-to-id" type="text" placeholder="e.g. 1" class="input-field text-sm"/>
+            </div>
+          </div>
+          <div class="mb-2">
+            <label class="text-xs text-slate-500 font-['Sora'] uppercase mb-1 block">Relationship Type</label>
+            <select id="rel-type" class="input-field text-sm">
+              <option>SUMINISTRA</option><option>RECIBE_ORDEN</option><option>INCLUYE</option>
+              <option>SE_ENVIA_POR</option><option>ALMACENADO_EN</option><option>UBICADO_EN</option>
+              <option>LLEGA_A</option><option>SALE_DE</option><option>GESTIONA</option>
+              <option>REQUIERE</option><option>DESTINO</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="text-xs text-slate-500 font-['Sora'] uppercase mb-1 block">Properties (≥3)</label>
+            <div id="rel-props-list" class="space-y-1">
+              <div class="flex gap-1"><input type="text" placeholder="key" class="input-field text-xs py-1.5 w-1/2" /><input type="text" placeholder="value" class="input-field text-xs py-1.5 w-1/2"/></div>
+              <div class="flex gap-1"><input type="text" placeholder="key" class="input-field text-xs py-1.5 w-1/2" /><input type="text" placeholder="value" class="input-field text-xs py-1.5 w-1/2"/></div>
+              <div class="flex gap-1"><input type="text" placeholder="key" class="input-field text-xs py-1.5 w-1/2" /><input type="text" placeholder="value" class="input-field text-xs py-1.5 w-1/2"/></div>
+            </div>
+            <button onclick="addRelPropRow()" class="text-xs text-petroleum underline mt-1">+ Add property</button>
+          </div>
+          <button onclick="createRelationship()" class="btn-primary w-full">Create Relationship</button>
+        </div>
+
+        <!-- Manage relationship props -->
+        <div class="card">
+          <h3 class="font-['Sora'] font-semibold text-petroleum mb-4 flex items-center gap-2"><span class="material-symbols-outlined">edit</span> Manage Relationship Properties</h3>
+          <div class="grid grid-cols-2 gap-2 mb-2">
+            <div>
+              <label class="text-xs text-slate-500 font-['Sora'] uppercase mb-1 block">From Label</label>
+              <select id="mrel-from-label" class="input-field text-sm">
+                <option>Supplier</option><option>Product</option><option>OrderCompra</option>
+                <option>Inventory</option><option>CentroDistribucion</option><option>Transporte</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs text-slate-500 font-['Sora'] uppercase mb-1 block">From ID</label>
+              <input id="mrel-from-id" type="text" placeholder="e.g. 1" class="input-field text-sm"/>
+            </div>
+            <div>
+              <label class="text-xs text-slate-500 font-['Sora'] uppercase mb-1 block">To Label</label>
+              <select id="mrel-to-label" class="input-field text-sm">
+                <option>Product</option><option>Supplier</option><option>OrderCompra</option>
+                <option>Inventory</option><option>CentroDistribucion</option><option>Transporte</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs text-slate-500 font-['Sora'] uppercase mb-1 block">To ID</label>
+              <input id="mrel-to-id" type="text" placeholder="e.g. 1" class="input-field text-sm"/>
+            </div>
+          </div>
+          <div class="mb-2">
+            <label class="text-xs text-slate-500 font-['Sora'] uppercase mb-1 block">Relationship Type</label>
+            <select id="mrel-type" class="input-field text-sm">
+              <option>SUMINISTRA</option><option>RECIBE_ORDEN</option><option>INCLUYE</option>
+              <option>SE_ENVIA_POR</option><option>ALMACENADO_EN</option><option>UBICADO_EN</option>
+              <option>LLEGA_A</option><option>SALE_DE</option><option>GESTIONA</option>
+              <option>REQUIERE</option><option>DESTINO</option>
+            </select>
+          </div>
+          <div class="mb-2">
+            <label class="text-xs text-slate-500 font-['Sora'] uppercase mb-1 block">Add/Update Properties (key=value)</label>
+            <input id="mrel-set-props" type="text" placeholder="e.g. fecha=2026-01-01,costo=100" class="input-field text-sm"/>
+          </div>
+          <div class="mb-3">
+            <label class="text-xs text-slate-500 font-['Sora'] uppercase mb-1 block">Remove Properties (comma-sep keys)</label>
+            <input id="mrel-rm-props" type="text" placeholder="e.g. nota,descuento" class="input-field text-sm"/>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="updateRelProps()" class="btn-primary flex-1 text-xs">Update Props</button>
+            <button onclick="removeRelProps()" class="btn-secondary flex-1 text-xs">Remove Props</button>
+          </div>
+        </div>
+
+        <!-- Delete relationship -->
+        <div class="card border-red-100">
+          <h3 class="font-['Sora'] font-semibold text-red-600 mb-4 flex items-center gap-2"><span class="material-symbols-outlined">link_off</span> Delete Relationship</h3>
+          <div class="grid grid-cols-2 gap-2 mb-2">
+            <div>
+              <label class="text-xs text-slate-500 font-['Sora'] uppercase mb-1 block">From Label</label>
+              <select id="drel-from-label" class="input-field text-sm">
+                <option>Supplier</option><option>Product</option><option>OrderCompra</option>
+                <option>Inventory</option><option>CentroDistribucion</option><option>Transporte</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs text-slate-500 font-['Sora'] uppercase mb-1 block">From ID</label>
+              <input id="drel-from-id" type="text" placeholder="e.g. 1" class="input-field text-sm"/>
+            </div>
+            <div>
+              <label class="text-xs text-slate-500 font-['Sora'] uppercase mb-1 block">To Label</label>
+              <select id="drel-to-label" class="input-field text-sm">
+                <option>Product</option><option>Supplier</option><option>OrderCompra</option>
+                <option>Inventory</option><option>CentroDistribucion</option><option>Transporte</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs text-slate-500 font-['Sora'] uppercase mb-1 block">To ID</label>
+              <input id="drel-to-id" type="text" placeholder="e.g. 1" class="input-field text-sm"/>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="text-xs text-slate-500 font-['Sora'] uppercase mb-1 block">Relationship Type</label>
+            <select id="drel-type" class="input-field text-sm">
+              <option>SUMINISTRA</option><option>RECIBE_ORDEN</option><option>INCLUYE</option>
+              <option>SE_ENVIA_POR</option><option>ALMACENADO_EN</option><option>UBICADO_EN</option>
+              <option>LLEGA_A</option><option>SALE_DE</option><option>GESTIONA</option>
+              <option>REQUIERE</option><option>DESTINO</option>
+            </select>
+          </div>
+          <button onclick="deleteSingleRel()" class="btn-danger w-full">Delete Relationship</button>
+        </div>
+
+        <!-- Bulk relationship ops -->
+        <div class="card border-orange-100">
+          <h3 class="font-['Sora'] font-semibold text-orange-700 mb-4 flex items-center gap-2"><span class="material-symbols-outlined">sync_alt</span> Bulk Relationship Operations</h3>
+          <div class="grid grid-cols-2 gap-2 mb-2">
+            <div>
+              <label class="text-xs text-slate-500 font-['Sora'] uppercase mb-1 block">Rel. Type</label>
+              <select id="brel-type" class="input-field text-sm">
+                <option>SUMINISTRA</option><option>RECIBE_ORDEN</option><option>INCLUYE</option>
+                <option>SE_ENVIA_POR</option><option>ALMACENADO_EN</option><option>UBICADO_EN</option>
+                <option>LLEGA_A</option><option>SALE_DE</option><option>GESTIONA</option>
+                <option>REQUIERE</option><option>DESTINO</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs text-slate-500 font-['Sora'] uppercase mb-1 block">Filter Label</label>
+              <select id="brel-filter-label" class="input-field text-sm">
+                <option>Supplier</option><option>Product</option><option>OrderCompra</option>
+                <option>Inventory</option><option>CentroDistribucion</option><option>Transporte</option>
+              </select>
+            </div>
+          </div>
+          <input id="brel-filter-prop" type="text" placeholder="filter property (e.g. pais)" class="input-field text-xs py-1.5 mb-1"/>
+          <input id="brel-filter-vals" type="text" placeholder="values (comma-sep)" class="input-field text-xs py-1.5 mb-2"/>
+          <input id="brel-set-props" type="text" placeholder="props to set/update (key=val,key2=val2)" class="input-field text-xs py-1.5 mb-1"/>
+          <input id="brel-rm-props" type="text" placeholder="props to remove (comma-sep keys)" class="input-field text-xs py-1.5 mb-2"/>
+          <div class="flex gap-2">
+            <button onclick="bulkUpdateRels()" class="btn-primary flex-1 text-xs">Bulk Update</button>
+            <button onclick="bulkRemoveRelProps()" class="btn-secondary flex-1 text-xs">Bulk Remove Props</button>
+            <button onclick="bulkDeleteRels()" class="btn-danger flex-1 text-xs">Bulk Delete</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ======================== QUERIES ======================== -->
+    <div id="section-queries" class="section">
+      <div class="mb-6">
+        <h1 class="font-['Sora'] text-3xl font-semibold mb-1">Cypher Queries</h1>
+        <p class="text-slate-500 text-sm">6 consultas parametrizables sobre el grafo de cadena de suministros</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <!-- Q1: Products by Category -->
+        <div class="card">
+          <h4 class="font-['Sora'] font-semibold text-petroleum mb-1 text-sm">Q1 · Products by Category</h4>
+          <p class="text-xs text-slate-400 mb-3 font-mono">MATCH (p:Product) WHERE p.categoria = $cat RETURN p</p>
+          <div class="flex gap-2 mb-3">
+            <input id="q1-cat" type="text" placeholder="category (e.g. Bebidas)" class="input-field text-sm flex-1"/>
+            <button onclick="runQ1()" class="btn-primary">Run</button>
+          </div>
+          <div id="q1-result" class="overflow-x-auto max-h-56"></div>
+        </div>
+
+        <!-- Q2: Top Suppliers by Rating -->
+        <div class="card">
+          <h4 class="font-['Sora'] font-semibold text-petroleum mb-1 text-sm">Q2 · Top Suppliers by Rating</h4>
+          <p class="text-xs text-slate-400 mb-3 font-mono">MATCH (s:Supplier) RETURN s ORDER BY s.rating DESC LIMIT $n</p>
+          <div class="flex gap-2 mb-3">
+            <input id="q2-limit" type="number" value="10" class="input-field text-sm w-20"/>
+            <button onclick="runQ2()" class="btn-primary">Run</button>
+          </div>
+          <div id="q2-result" class="overflow-x-auto max-h-56"></div>
+        </div>
+
+        <!-- Q3: Pending Orders -->
+        <div class="card">
+          <h4 class="font-['Sora'] font-semibold text-petroleum mb-1 text-sm">Q3 · Pending Orders</h4>
+          <p class="text-xs text-slate-400 mb-3 font-mono">MATCH (o:OrderCompra) WHERE o.estado = 'PENDIENTE' RETURN o LIMIT $n</p>
+          <div class="flex gap-2 mb-3">
+            <input id="q3-limit" type="number" value="20" class="input-field text-sm w-20"/>
+            <button onclick="runQ3()" class="btn-primary">Run</button>
+          </div>
+          <div id="q3-result" class="overflow-x-auto max-h-56"></div>
+        </div>
+
+        <!-- Q4: Transport Status -->
+        <div class="card">
+          <h4 class="font-['Sora'] font-semibold text-petroleum mb-1 text-sm">Q4 · Transport Status</h4>
+          <p class="text-xs text-slate-400 mb-3 font-mono">MATCH (t:Transporte) RETURN t ORDER BY t.fecha_salida LIMIT $n</p>
+          <div class="flex gap-2 mb-3">
+            <input id="q4-limit" type="number" value="20" class="input-field text-sm w-20"/>
+            <button onclick="runQ4()" class="btn-primary">Run</button>
+          </div>
+          <div id="q4-result" class="overflow-x-auto max-h-56"></div>
+        </div>
+
+        <!-- Q5: Inventory for Product -->
+        <div class="card">
+          <h4 class="font-['Sora'] font-semibold text-petroleum mb-1 text-sm">Q5 · Inventory Status for Product</h4>
+          <p class="text-xs text-slate-400 mb-3 font-mono">MATCH (p:Product)-[:ALMACENADO_EN]->(i:Inventory) WHERE p.id_producto = $id RETURN i, p</p>
+          <div class="flex gap-2 mb-3">
+            <input id="q5-id" type="number" placeholder="product id" class="input-field text-sm flex-1"/>
+            <button onclick="runQ5()" class="btn-primary">Run</button>
+          </div>
+          <div id="q5-result" class="overflow-x-auto max-h-56"></div>
+        </div>
+
+        <!-- Q6: Aggregations -->
+        <div class="card">
+          <h4 class="font-['Sora'] font-semibold text-petroleum mb-1 text-sm">Q6 · Aggregation Query</h4>
+          <p class="text-xs text-slate-400 mb-3 font-mono">MATCH (n:&lt;Label&gt;) RETURN func(n.property)</p>
+          <div class="grid grid-cols-3 gap-2 mb-3">
+            <select id="q6-label" class="input-field text-sm">
+              <option>Supplier</option><option>Product</option><option>OrderCompra</option>
+              <option>Inventory</option><option>CentroDistribucion</option><option>Transporte</option>
+            </select>
+            <select id="q6-func" class="input-field text-sm">
+              <option>COUNT</option><option>AVG</option><option>MAX</option><option>MIN</option><option>SUM</option>
+            </select>
+            <input id="q6-prop" type="text" placeholder="property" value="rating" class="input-field text-sm"/>
+          </div>
+          <button onclick="runQ6()" class="btn-primary w-full mb-3">Run Aggregation</button>
+          <div id="q6-result" class="overflow-x-auto max-h-56"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ======================== ANALYTICS ======================== -->
+    <div id="section-analytics" class="section">
+      <div class="mb-6">
+        <h1 class="font-['Sora'] text-3xl font-semibold mb-1">Analytics — Data Science</h1>
+        <p class="text-slate-500 text-sm">Algoritmos de análisis sobre el grafo de cadena de suministros</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <!-- Stockout Detection -->
+        <div class="card">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-['Sora'] font-semibold text-petroleum flex items-center gap-2">
+              <span class="material-symbols-outlined text-red-500">warning</span> Stockout Detection
+            </h3>
+            <button onclick="loadStockouts()" class="btn-sm">Refresh</button>
+          </div>
+          <p class="text-xs text-slate-400 mb-3">Detecta productos con inventario bajo usando análisis de grafo.</p>
+          <div id="analytics-stockouts">
+            <p class="text-slate-400 text-sm">Click Refresh to load...</p>
+          </div>
+        </div>
+
+        <!-- Reorder Suggestions -->
+        <div class="card">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-['Sora'] font-semibold text-petroleum flex items-center gap-2">
+              <span class="material-symbols-outlined text-amber-500">shopping_cart</span> Reorder Suggestions
+            </h3>
+            <button onclick="loadReorder()" class="btn-sm">Refresh</button>
+          </div>
+          <p class="text-xs text-slate-400 mb-3">Sugiere reorden basado en demanda promedio de últimos 90 días.</p>
+          <div id="analytics-reorder">
+            <p class="text-slate-400 text-sm">Click Refresh to load...</p>
+          </div>
+        </div>
+
+        <!-- Top Suppliers by Volume -->
+        <div class="card">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-['Sora'] font-semibold text-petroleum flex items-center gap-2">
+              <span class="material-symbols-outlined text-emerald-600">storefront</span> Top Suppliers by Volume
+            </h3>
+            <button onclick="loadTopSuppliersAnalytics()" class="btn-sm">Refresh</button>
+          </div>
+          <p class="text-xs text-slate-400 mb-3">Proveedores rankeados por volumen total de productos suministrados.</p>
+          <div id="analytics-top-suppliers">
+            <p class="text-slate-400 text-sm">Click Refresh to load...</p>
+          </div>
+        </div>
+
+        <!-- Transport Overview -->
+        <div class="card">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-['Sora'] font-semibold text-petroleum flex items-center gap-2">
+              <span class="material-symbols-outlined text-blue-600">local_shipping</span> Transport Overview
+            </h3>
+            <button onclick="loadTransportOverview()" class="btn-sm">Refresh</button>
+          </div>
+          <p class="text-xs text-slate-400 mb-3">Resumen de transportes por tipo y estado en la red.</p>
+          <div id="analytics-transport">
+            <p class="text-slate-400 text-sm">Click Refresh to load...</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ======================== MODALS ======================== -->
+
+<!-- Create Node Modal -->
+<div class="modal-overlay" id="modal-create">
+  <div class="bg-white rounded-2xl p-6 w-full max-w-lg shadow-2xl">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="font-['Sora'] font-bold text-petroleum text-lg">Create Node</h3>
+      <button onclick="closeModal('modal-create')" class="text-slate-400 hover:text-slate-600">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="mb-3">
+      <label class="text-xs text-slate-500 font-['Sora'] uppercase mb-1 block">Label</label>
+      <select id="create-label" class="input-field" onchange="updateCreateFields()">
+        <option>Supplier</option><option>Product</option><option>OrderCompra</option>
+        <option>Inventory</option><option>CentroDistribucion</option><option>Transporte</option>
+      </select>
+    </div>
+    <div id="create-fields" class="space-y-2 mb-4"></div>
+    <div class="flex gap-2">
+      <button onclick="submitCreateNode()" class="btn-primary flex-1">Create</button>
+      <button onclick="closeModal('modal-create')" class="btn-secondary flex-1">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Multi-Label Node Modal -->
+<div class="modal-overlay" id="modal-multilabel">
+  <div class="bg-white rounded-2xl p-6 w-full max-w-lg shadow-2xl">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="font-['Sora'] font-bold text-petroleum text-lg">Create Node with 2+ Labels</h3>
+      <button onclick="closeModal('modal-multilabel')" class="text-slate-400 hover:text-slate-600">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="mb-3">
+      <label class="text-xs text-slate-500 font-['Sora'] uppercase mb-1 block">Labels (comma-separated)</label>
+      <input id="ml-labels" type="text" placeholder="e.g. Supplier,VIP,Certified" class="input-field"/>
+    </div>
+    <div class="mb-4">
+      <label class="text-xs text-slate-500 font-['Sora'] uppercase mb-1 block">Properties (key=value, one per line)</label>
+      <textarea id="ml-props" rows="7" placeholder="id_proveedor=9999&#10;nombre=Mi Proveedor&#10;pais=Guatemala&#10;rating=4.5&#10;activo=true&#10;categorias=Bebidas" class="input-field resize-none font-mono text-xs"></textarea>
+    </div>
+    <div class="flex gap-2">
+      <button onclick="submitMultiLabelNode()" class="btn-primary flex-1">Create</button>
+      <button onclick="closeModal('modal-multilabel')" class="btn-secondary flex-1">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Node Modal -->
+<div class="modal-overlay" id="modal-edit">
+  <div class="bg-white rounded-2xl p-6 w-full max-w-lg shadow-2xl">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="font-['Sora'] font-bold text-petroleum text-lg">Edit Node Properties</h3>
+      <button onclick="closeModal('modal-edit')" class="text-slate-400 hover:text-slate-600">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <input type="hidden" id="edit-id-val"/>
+    <input type="hidden" id="edit-label-val"/>
+    <input type="hidden" id="edit-id-prop-val"/>
+    <div class="mb-3 text-sm text-slate-500">
+      Editing: <span class="font-bold text-petroleum" id="edit-node-desc"></span>
+    </div>
+    <div class="mb-2">
+      <label class="text-xs text-slate-500 font-['Sora'] uppercase mb-1 block">Properties to Add/Update (key=value, one per line)</label>
+      <textarea id="edit-set-props" rows="4" placeholder="rating=4.9&#10;activo=false" class="input-field resize-none font-mono text-xs"></textarea>
+    </div>
+    <div class="mb-4">
+      <label class="text-xs text-slate-500 font-['Sora'] uppercase mb-1 block">Properties to Remove (comma-sep keys)</label>
+      <input id="edit-rm-props" type="text" placeholder="e.g. nota_interna,descuento" class="input-field text-sm"/>
+    </div>
+    <div class="flex gap-2">
+      <button onclick="submitEditNode()" class="btn-primary flex-1">Save Changes</button>
+      <button onclick="closeModal('modal-edit')" class="btn-secondary flex-1">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+let currentSection = 'dashboard';
+let currentEntityLabel = 'Supplier';
+let dashCurrentTab = 'suppliers';
+let dashData = [];
+
+const LABEL_ID_MAP = {
+  Supplier: 'id_proveedor', Product: 'id_producto',
+  OrderCompra: 'id_orden', Inventory: 'id_inventario',
+  CentroDistribucion: 'id_centro', Transporte: 'id_transporte'
+};
+const ENTITY_FIELDS = {
+  Supplier: [
+    {k:'id_proveedor',l:'ID Proveedor',t:'number',req:true},
+    {k:'nombre',l:'Nombre',t:'text',req:true},
+    {k:'pais',l:'País',t:'text',req:true},
+    {k:'rating',l:'Rating (0-5)',t:'number',req:true},
+    {k:'activo',l:'Activo',t:'text',req:true,ph:'true/false'},
+    {k:'categorias',l:'Categorías',t:'text',req:true,ph:'Bebidas,Lácteos'}
+  ],
+  Product: [
+    {k:'id_producto',l:'ID Producto',t:'number',req:true},
+    {k:'nombre',l:'Nombre',t:'text',req:true},
+    {k:'categoria',l:'Categoría',t:'text',req:true},
+    {k:'precio',l:'Precio',t:'number',req:true},
+    {k:'perecedero',l:'Perecedero',t:'text',req:true,ph:'true/false'},
+    {k:'fecha_expiracion',l:'Fecha Expiración',t:'text',req:true,ph:'2027-12-31'}
+  ],
+  OrderCompra: [
+    {k:'id_orden',l:'ID Orden',t:'number',req:true},
+    {k:'fecha_orden',l:'Fecha',t:'text',req:true,ph:'2026-01-01'},
+    {k:'estado',l:'Estado',t:'text',req:true,ph:'PENDIENTE/ENTREGADO/CANCELADO'},
+    {k:'total',l:'Total',t:'number',req:true},
+    {k:'urgente',l:'Urgente',t:'text',req:true,ph:'true/false'},
+    {k:'metodo_pago',l:'Método Pago',t:'text',req:true,ph:'CONTADO/CREDITO'}
+  ],
+  Inventory: [
+    {k:'id_inventario',l:'ID Inventario',t:'number',req:true},
+    {k:'cantidad',l:'Cantidad',t:'number',req:true},
+    {k:'ubicacion',l:'Ubicación',t:'text',req:true},
+    {k:'capacidad_max',l:'Cap. Máxima',t:'number',req:true},
+    {k:'temperatura_controlada',l:'Temp. Controlada',t:'text',req:true,ph:'true/false'},
+    {k:'fecha_actualizacion',l:'Fecha Actualización',t:'text',req:true,ph:'2026-01-01'}
+  ],
+  CentroDistribucion: [
+    {k:'id_centro',l:'ID Centro',t:'number',req:true},
+    {k:'nombre',l:'Nombre',t:'text',req:true},
+    {k:'ciudad',l:'Ciudad',t:'text',req:true},
+    {k:'capacidad',l:'Capacidad',t:'number',req:true},
+    {k:'activo',l:'Activo',t:'text',req:true,ph:'true/false'},
+    {k:'tipo',l:'Tipo',t:'text',req:true,ph:'PRINCIPAL/SECUNDARIO'}
+  ],
+  Transporte: [
+    {k:'id_transporte',l:'ID Transporte',t:'number',req:true},
+    {k:'tipo',l:'Tipo',t:'text',req:true,ph:'CAMION/AVION/BARCO'},
+    {k:'costo',l:'Costo',t:'number',req:true},
+    {k:'duracion_dias',l:'Duración (días)',t:'number',req:true},
+    {k:'estado',l:'Estado',t:'text',req:true,ph:'EN_TRANSITO/ENTREGADO/PENDIENTE'},
+    {k:'fecha_salida',l:'Fecha Salida',t:'text',req:true,ph:'2026-01-01'}
+  ]
+};
+
+// ============================================================
+// UTILS
+// ============================================================
+async function api(path, options={}) {
+  const res = await fetch(path, {
+    headers: {'Content-Type':'application/json'},
+    ...options
+  });
+  return res.json();
+}
+
+function toast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => { t.className = 'toast'; }, 3500);
+}
+
+function renderTable(data, containerId) {
+  const el = document.getElementById(containerId);
+  if (!data || !data.length) { el.innerHTML = '<p class="text-slate-400 text-xs py-3">No results.</p>'; return; }
+  const keys = Object.keys(data[0]);
+  const head = `<tr>${keys.map(k=>`<th>${k}</th>`).join('')}</tr>`;
+  const rows = data.map(row =>
+    `<tr>${keys.map(k=>`<td class="truncate max-w-xs" title="${String(row[k]??'')}">${String(row[k]??'—')}</td>`).join('')}</tr>`
+  ).join('');
+  el.innerHTML = `<table class="result-table"><thead>${head}</thead><tbody>${rows}</tbody></table>`;
+}
+
+function parseKVLines(text) {
+  const obj = {};
+  text.split('\n').forEach(line => {
+    const idx = line.indexOf('=');
+    if (idx > 0) {
+      const k = line.slice(0,idx).trim();
+      const v = line.slice(idx+1).trim();
+      obj[k] = coerceVal(v);
+    }
+  });
+  return obj;
+}
+
+function parseKVComma(text) {
+  const obj = {};
+  text.split(',').forEach(pair => {
+    const idx = pair.indexOf('=');
+    if (idx > 0) {
+      const k = pair.slice(0,idx).trim();
+      const v = pair.slice(idx+1).trim();
+      obj[k] = coerceVal(v);
+    }
+  });
+  return obj;
+}
+
+function coerceVal(v) {
+  if (v === 'true') return true;
+  if (v === 'false') return false;
+  if (!isNaN(v) && v !== '') return Number(v);
+  return v;
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function navigate(section) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  document.getElementById('section-'+section).classList.add('active');
+  document.querySelector(`[onclick="navigate('${section}')"]`).classList.add('active');
+  const titles = {dashboard:'Dashboard',entities:'Entities',relationships:'Relationships',queries:'Cypher Queries',analytics:'Analytics'};
+  document.getElementById('page-title').textContent = titles[section];
+  currentSection = section;
+  if (section === 'dashboard') loadDashboard();
+  if (section === 'entities') loadEntities();
+}
+
+// ============================================================
+// DB STATUS
+// ============================================================
+async function checkHealth() {
+  try {
+    const d = await api('/api/health');
+    const badge = document.getElementById('db-status-badge');
+    const side = document.getElementById('db-status-side');
+    if (d.success) {
+      badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500"></span><span class="text-emerald-700">DB OK</span>';
+      badge.className = 'flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold font-[\'Sora\'] border border-emerald-200';
+      side.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500"></span>Connected';
+    }
+  } catch {
+    document.getElementById('db-status-badge').innerHTML = '<span class="w-2 h-2 rounded-full bg-red-500"></span><span>Error</span>';
+  }
+}
+
+// ============================================================
+// INIT DATABASE
+// ============================================================
+async function initDatabase() {
+  if (!confirm('Initialize database? This will regenerate 5,400+ nodes. It may take ~1 minute.')) return;
+  toast('Initializing… please wait (this takes ~1 min)', 'success');
+  try {
+    const d = await api('/api/init', {method:'POST', body: JSON.stringify({clear:true})});
+    if (d.success) { toast('Database initialized!'); loadDashboard(); }
+    else toast('Error: '+d.error, 'error');
+  } catch(e) { toast('Request failed: '+e.message, 'error'); }
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+async function loadDashboard() {
+  await Promise.all([loadStats(), loadDashTable(), loadTopSuppliersDash(), loadStockoutsDash()]);
+}
+
+async function loadStats() {
+  try {
+    const d = await api('/api/stats');
+    if (!d.success) return;
+    const s = d.data;
+    document.getElementById('stat-nodes').textContent = s.total_nodes?.toLocaleString() ?? '—';
+    document.getElementById('stat-rels').textContent = s.total_relationships?.toLocaleString() ?? '—';
+    document.getElementById('stat-suppliers').textContent = s.total_suppliers?.toLocaleString() ?? '—';
+    document.getElementById('stat-products').textContent = s.total_products?.toLocaleString() ?? '—';
+    document.getElementById('stat-orders').textContent = s.total_orders?.toLocaleString() ?? '—';
+    document.getElementById('stat-centers').textContent = s.total_centers?.toLocaleString() ?? '—';
+  } catch {}
+}
+
+let dashRawData = [];
+async function loadDashTable(tab) {
+  tab = tab || dashCurrentTab;
+  const urlMap = {suppliers:'/api/suppliers?limit=50', products:'/api/products?limit=50', orders:'/api/orders?limit=50'};
+  try {
+    const d = await api(urlMap[tab]);
+    dashRawData = d.success ? d.data : [];
+    renderDashTable(dashRawData);
+  } catch { dashRawData = []; renderDashTable([]); }
+}
+
+function renderDashTable(data) {
+  const thead = document.getElementById('dash-thead');
+  const tbody = document.getElementById('dash-tbody');
+  if (!data || !data.length) {
+    thead.innerHTML='<tr></tr>';
+    tbody.innerHTML='<tr><td colspan="6" class="text-center py-8 text-slate-400">No data. Initialize DB first.</td></tr>';
+    return;
+  }
+  const keys = Object.keys(data[0]).slice(0,5);
+  thead.innerHTML = `<tr>${keys.map(k=>`<th>${k}</th>`).join('')}</tr>`;
+  tbody.innerHTML = data.map(row =>
+    `<tr>${keys.map(k=>`<td class="truncate max-w-xs" title="${String(row[k]??'')}">${String(row[k]??'—')}</td>`).join('')}</tr>`
+  ).join('');
+}
+
+function filterDashTable(q) {
+  q = q.toLowerCase();
+  const filtered = dashRawData.filter(row => Object.values(row).some(v => String(v).toLowerCase().includes(q)));
+  renderDashTable(filtered);
+}
+
+function dashTab(btn, tab) {
+  document.querySelectorAll('#section-dashboard .tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  dashCurrentTab = tab;
+  loadDashTable(tab);
+}
+
+async function loadTopSuppliersDash() {
+  try {
+    const d = await api('/api/analytics/top-suppliers?limit=5');
+    const el = document.getElementById('top-suppliers-chart');
+    if (!d.success || !d.data.length) { el.innerHTML='<p>No data.</p>'; return; }
+    const maxVol = Math.max(...d.data.map(s=>s.product_count||s.count||0)) || 1;
+    el.innerHTML = d.data.map(s => {
+      const name = s.nombre || s.name || 'Unknown';
+      const vol = s.product_count || s.count || 0;
+      const pct = Math.round((vol/maxVol)*100);
+      return `<div>
+        <div class="flex justify-between text-xs mb-1"><span class="font-medium text-on-surface truncate">${name}</span><span class="text-slate-400">${vol} vol</span></div>
+        <div class="w-full bg-slate-100 rounded-full h-1.5"><div class="bg-petroleum h-1.5 rounded-full" style="width:${pct}%"></div></div>
+      </div>`;
+    }).join('');
+  } catch { document.getElementById('top-suppliers-chart').innerHTML='<p>Error loading.</p>'; }
+}
+
+async function loadStockoutsDash() {
+  try {
+    const d = await api('/api/analytics/stockouts?limit=4');
+    const el = document.getElementById('stockout-list');
+    if (!d.success || !d.data.length) { el.innerHTML='<p>No stockout risks.</p>'; return; }
+    el.innerHTML = d.data.map(s => {
+      const name = s.nombre || s.product_name || 'Unknown';
+      const qty = s.total_stock ?? s.cantidad ?? '?';
+      return `<div class="flex items-center gap-2 p-2 border border-red-100 rounded-lg bg-red-50/30">
+        <div class="w-2 h-2 rounded-full bg-coral flex-shrink-0"></div>
+        <div class="flex-1 min-w-0"><div class="text-xs font-medium truncate">${name}</div><div class="text-xs text-slate-400">Stock: ${qty}</div></div>
+      </div>`;
+    }).join('');
+  } catch { document.getElementById('stockout-list').innerHTML='<p>Error loading.</p>'; }
+}
+
+// ============================================================
+// ENTITIES
+// ============================================================
+let entityData = [];
+
+async function loadEntities() {
+  document.getElementById('ent-label-title').textContent = currentEntityLabel;
+  const d = await api(`/api/nodes/${currentEntityLabel}?limit=100`).catch(()=>({success:false}));
+  entityData = d.success ? d.data : [];
+  renderEntityTable(entityData);
+}
+
+function renderEntityTable(data) {
+  const thead = document.getElementById('ent-thead');
+  const tbody = document.getElementById('ent-tbody');
+  if (!data || !data.length) {
+    thead.innerHTML='<tr></tr>';
+    tbody.innerHTML=`<tr><td colspan="8" class="text-center py-8 text-slate-400">No ${currentEntityLabel} nodes found.</td></tr>`;
+    return;
+  }
+  const idProp = LABEL_ID_MAP[currentEntityLabel] || 'id';
+  const keys = Object.keys(data[0]);
+  thead.innerHTML = `<tr>${keys.map(k=>`<th>${k}</th>`).join('')}<th>Actions</th></tr>`;
+  tbody.innerHTML = data.map(row => {
+    const idVal = row[idProp];
+    return `<tr>
+      ${keys.map(k=>`<td class="truncate max-w-xs text-xs" title="${String(row[k]??'')}">${String(row[k]??'—')}</td>`).join('')}
+      <td class="whitespace-nowrap">
+        <button onclick="openEditModal('${currentEntityLabel}','${idProp}','${idVal}')" class="btn-sm mr-1">Edit</button>
+        <button onclick="deleteNode('${currentEntityLabel}','${idProp}','${idVal}')" class="btn-danger">Del</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function filterEntTable(q) {
+  q = q.toLowerCase();
+  const filtered = entityData.filter(row => Object.values(row).some(v => String(v).toLowerCase().includes(q)));
+  renderEntityTable(filtered);
+}
+
+function entTab(btn, label) {
+  document.querySelectorAll('#section-entities .tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  currentEntityLabel = label;
+  loadEntities();
+}
+
+// ============================================================
+// CREATE NODE MODAL
+// ============================================================
+function updateCreateFields() {
+  const label = document.getElementById('create-label').value;
+  const fields = ENTITY_FIELDS[label] || [];
+  const html = fields.map(f =>
+    `<div>
+      <label class="text-xs text-slate-500 font-['Sora'] uppercase mb-0.5 block">${f.l}${f.req?' *':''}</label>
+      <input type="${f.t}" data-key="${f.k}" placeholder="${f.ph||''}" class="input-field text-sm"/>
+    </div>`
+  ).join('');
+  document.getElementById('create-fields').innerHTML = html;
+}
+
+function openCreateModal() {
+  updateCreateFields();
+  openModal('modal-create');
+}
+
+async function submitCreateNode() {
+  const label = document.getElementById('create-label').value;
+  const fields = ENTITY_FIELDS[label] || [];
+  const properties = {};
+  let valid = true;
+  document.querySelectorAll('#create-fields input').forEach(inp => {
+    const k = inp.dataset.key;
+    const v = inp.value.trim();
+    if (!v && inp.previousElementSibling?.textContent.includes('*')) { valid=false; inp.style.borderColor='red'; return; }
+    inp.style.borderColor='';
+    if (v) properties[k] = coerceVal(v);
+  });
+  if (!valid) { toast('Fill all required fields','error'); return; }
+  const d = await api('/api/nodes', {method:'POST', body:JSON.stringify({labels:[label],properties})}).catch(()=>({success:false,error:'Network error'}));
+  if (d.success) { toast(`${label} created!`); closeModal('modal-create'); loadEntities(); }
+  else toast('Error: '+d.error,'error');
+}
+
+// ============================================================
+// MULTI-LABEL NODE MODAL
+// ============================================================
+function openMultiLabelModal() { openModal('modal-multilabel'); }
+
+async function submitMultiLabelNode() {
+  const labelsRaw = document.getElementById('ml-labels').value.trim();
+  const propsRaw = document.getElementById('ml-props').value.trim();
+  if (!labelsRaw) { toast('Enter at least 2 labels','error'); return; }
+  const labels = labelsRaw.split(',').map(l=>l.trim()).filter(Boolean);
+  if (labels.length < 2) { toast('Enter at least 2 labels for multi-label creation','error'); return; }
+  const properties = parseKVLines(propsRaw);
+  const d = await api('/api/nodes', {method:'POST', body:JSON.stringify({labels,properties})}).catch(()=>({success:false,error:'Network error'}));
+  if (d.success) { toast(`Node [${labels.join(':')}] created!`); closeModal('modal-multilabel'); loadEntities(); }
+  else toast('Error: '+d.error,'error');
+}
+
+// ============================================================
+// EDIT NODE MODAL
+// ============================================================
+function openEditModal(label, idProp, idVal) {
+  document.getElementById('edit-label-val').value = label;
+  document.getElementById('edit-id-prop-val').value = idProp;
+  document.getElementById('edit-id-val').value = idVal;
+  document.getElementById('edit-node-desc').textContent = `${label} [${idProp}=${idVal}]`;
+  document.getElementById('edit-set-props').value = '';
+  document.getElementById('edit-rm-props').value = '';
+  openModal('modal-edit');
+}
+
+async function submitEditNode() {
+  const label = document.getElementById('edit-label-val').value;
+  const idProp = document.getElementById('edit-id-prop-val').value;
+  const idVal = document.getElementById('edit-id-val').value;
+  const setRaw = document.getElementById('edit-set-props').value.trim();
+  const rmRaw = document.getElementById('edit-rm-props').value.trim();
+
+  if (setRaw) {
+    const properties = parseKVLines(setRaw);
+    properties.id_prop = idProp;
+    const d = await api(`/api/nodes/${label}/${idVal}`, {method:'PATCH', body:JSON.stringify(properties)}).catch(()=>({success:false,error:'Network error'}));
+    if (!d.success) { toast('Update error: '+d.error,'error'); return; }
+  }
+  if (rmRaw) {
+    const property_names = rmRaw.split(',').map(s=>s.trim()).filter(Boolean);
+    const d = await api(`/api/nodes/${label}/${idVal}/remove-properties`, {method:'POST', body:JSON.stringify({id_prop:idProp,property_names})}).catch(()=>({success:false,error:'Network error'}));
+    if (!d.success) { toast('Remove error: '+d.error,'error'); return; }
+  }
+  toast('Node updated!'); closeModal('modal-edit'); loadEntities();
+}
+
+// ============================================================
+// DELETE NODE
+// ============================================================
+async function deleteNode(label, idProp, idVal) {
+  if (!confirm(`Delete ${label} with ${idProp}=${idVal}? This also deletes its relationships.`)) return;
+  const d = await api(`/api/nodes/${label}/${idVal}?id_prop=${idProp}`, {method:'DELETE'}).catch(()=>({success:false}));
+  if (d.success) { toast('Node deleted!'); loadEntities(); }
+  else toast('Error deleting node','error');
+}
+
+// ============================================================
+// BULK OPERATIONS
+// ============================================================
+async function bulkUpdateProps() {
+  const filterProp = document.getElementById('bulk-filter-prop').value.trim();
+  const filterVals = document.getElementById('bulk-filter-vals').value.split(',').map(s=>coerceVal(s.trim())).filter(v=>v!=='');
+  const newProp = document.getElementById('bulk-new-prop').value.trim();
+  const newVal = coerceVal(document.getElementById('bulk-new-val').value.trim());
+  if (!filterProp || !filterVals.length || !newProp) { toast('Fill all bulk update fields','error'); return; }
+  const d = await api(`/api/nodes/${currentEntityLabel}/bulk/update`, {
+    method:'POST', body:JSON.stringify({filter_prop:filterProp,filter_values:filterVals,properties:{[newProp]:newVal}})
+  }).catch(()=>({success:false}));
+  if (d.success) { toast(`Updated ${d.updated} nodes!`); loadEntities(); }
+  else toast('Error: '+d.error,'error');
+}
+
+async function bulkRemoveProps() {
+  const filterProp = document.getElementById('bulk-rm-filter-prop').value.trim();
+  const filterVals = document.getElementById('bulk-rm-filter-vals').value.split(',').map(s=>coerceVal(s.trim())).filter(v=>v!=='');
+  const props = document.getElementById('bulk-rm-props').value.split(',').map(s=>s.trim()).filter(Boolean);
+  if (!filterProp || !filterVals.length || !props.length) { toast('Fill all fields','error'); return; }
+  const d = await api(`/api/nodes/${currentEntityLabel}/bulk/remove-properties`, {
+    method:'POST', body:JSON.stringify({filter_prop:filterProp,filter_values:filterVals,property_names:props})
+  }).catch(()=>({success:false}));
+  if (d.success) { toast(`Removed props from ${d.updated} nodes!`); loadEntities(); }
+  else toast('Error: '+d.error,'error');
+}
+
+async function bulkDeleteNodes() {
+  const filterProp = document.getElementById('bulk-del-filter-prop').value.trim();
+  const filterVals = document.getElementById('bulk-del-filter-vals').value.split(',').map(s=>coerceVal(s.trim())).filter(v=>v!=='');
+  if (!filterProp || !filterVals.length) { toast('Fill filter fields','error'); return; }
+  if (!confirm(`Delete all ${currentEntityLabel} where ${filterProp} IN [${filterVals.join(',')}]?`)) return;
+  const d = await api(`/api/nodes/${currentEntityLabel}/bulk/delete`, {
+    method:'POST', body:JSON.stringify({filter_prop:filterProp,filter_values:filterVals})
+  }).catch(()=>({success:false}));
+  if (d.success) { toast(`Deleted ${d.deleted} nodes!`); loadEntities(); }
+  else toast('Error: '+d.error,'error');
+}
+
+async function runAggregation() {
+  const func = document.getElementById('agg-func').value;
+  const prop = document.getElementById('agg-prop').value.trim();
+  if (!prop) { toast('Enter a property name','error'); return; }
+  const d = await api(`/api/nodes/${currentEntityLabel}/aggregations?func=${func}&prop=${prop}`).catch(()=>({success:false}));
+  const el = document.getElementById('agg-result');
+  if (d.success) el.innerHTML = `<span class="font-bold text-petroleum">${func}(${prop}) = ${d.data.result}</span>`;
+  else el.innerHTML = `<span class="text-red-500">${d.error||'Error'}</span>`;
+}
+
+// ============================================================
+// RELATIONSHIPS
+// ============================================================
+function addRelPropRow() {
+  const list = document.getElementById('rel-props-list');
+  const div = document.createElement('div');
+  div.className = 'flex gap-1';
+  div.innerHTML = '<input type="text" placeholder="key" class="input-field text-xs py-1.5 w-1/2"/><input type="text" placeholder="value" class="input-field text-xs py-1.5 w-1/2"/>';
+  list.appendChild(div);
+}
+
+function collectRelProps(containerId) {
+  const props = {};
+  document.querySelectorAll(`#${containerId} input[placeholder="key"]`).forEach((ki,i) => {
+    const k = ki.value.trim();
+    const v = ki.parentElement.querySelector('input[placeholder="value"]')?.value.trim();
+    if (k && v !== undefined) props[k] = coerceVal(v);
+  });
+  return props;
+}
+
+function getRelBody(prefix) {
+  return {
+    from_label: document.getElementById(`${prefix}-from-label`).value,
+    from_id: coerceVal(document.getElementById(`${prefix}-from-id`).value),
+    to_label: document.getElementById(`${prefix}-to-label`).value,
+    to_id: coerceVal(document.getElementById(`${prefix}-to-id`).value),
+    rel_type: document.getElementById(`${prefix}-type`).value,
+  };
+}
+
+async function createRelationship() {
+  const body = getRelBody('rel');
+  body.properties = collectRelProps('rel-props-list');
+  if (Object.keys(body.properties).length < 3) { toast('Add at least 3 properties to the relationship','error'); return; }
+  const d = await api('/api/relationships', {method:'POST', body:JSON.stringify(body)}).catch(()=>({success:false,error:'Network error'}));
+  if (d.success) toast('Relationship created!');
+  else toast('Error: '+d.error,'error');
+}
+
+async function updateRelProps() {
+  const body = getRelBody('mrel');
+  const propsRaw = document.getElementById('mrel-set-props').value.trim();
+  body.properties = propsRaw ? parseKVComma(propsRaw) : {};
+  if (!Object.keys(body.properties).length) { toast('Enter properties to update','error'); return; }
+  const d = await api('/api/relationships', {method:'PATCH', body:JSON.stringify(body)}).catch(()=>({success:false,error:'Network error'}));
+  if (d.success) toast('Relationship properties updated!');
+  else toast('Error: '+d.error,'error');
+}
+
+async function removeRelProps() {
+  const body = getRelBody('mrel');
+  const rmRaw = document.getElementById('mrel-rm-props').value.trim();
+  body.property_names = rmRaw.split(',').map(s=>s.trim()).filter(Boolean);
+  if (!body.property_names.length) { toast('Enter properties to remove','error'); return; }
+  const d = await api('/api/relationships/remove-properties', {method:'POST', body:JSON.stringify(body)}).catch(()=>({success:false,error:'Network error'}));
+  if (d.success) toast('Properties removed from relationship!');
+  else toast('Error: '+d.error,'error');
+}
+
+async function deleteSingleRel() {
+  const body = getRelBody('drel');
+  if (!confirm(`Delete relationship ${body.rel_type} between ${body.from_label}[${body.from_id}] → ${body.to_label}[${body.to_id}]?`)) return;
+  const d = await api('/api/relationships', {method:'DELETE', body:JSON.stringify(body)}).catch(()=>({success:false,error:'Network error'}));
+  if (d.success) toast('Relationship deleted!');
+  else toast('Error: '+d.error,'error');
+}
+
+async function bulkUpdateRels() {
+  const body = {
+    rel_type: document.getElementById('brel-type').value,
+    filter_label: document.getElementById('brel-filter-label').value,
+    filter_prop: document.getElementById('brel-filter-prop').value.trim(),
+    filter_values: document.getElementById('brel-filter-vals').value.split(',').map(s=>coerceVal(s.trim())).filter(v=>v!==''),
+    properties: parseKVComma(document.getElementById('brel-set-props').value.trim()),
+  };
+  if (!body.filter_prop || !body.filter_values.length || !Object.keys(body.properties).length) {
+    toast('Fill all bulk relationship fields','error'); return;
+  }
+  const d = await api('/api/relationships/bulk/update', {method:'POST', body:JSON.stringify(body)}).catch(()=>({success:false,error:'Network error'}));
+  if (d.success) toast(`Updated ${d.updated} relationships!`);
+  else toast('Error: '+d.error,'error');
+}
+
+async function bulkRemoveRelProps() {
+  const body = {
+    rel_type: document.getElementById('brel-type').value,
+    filter_label: document.getElementById('brel-filter-label').value,
+    filter_prop: document.getElementById('brel-filter-prop').value.trim(),
+    filter_values: document.getElementById('brel-filter-vals').value.split(',').map(s=>coerceVal(s.trim())).filter(v=>v!==''),
+    property_names: document.getElementById('brel-rm-props').value.split(',').map(s=>s.trim()).filter(Boolean),
+  };
+  const d = await api('/api/relationships/bulk/remove-properties', {method:'POST', body:JSON.stringify(body)}).catch(()=>({success:false,error:'Network error'}));
+  if (d.success) toast(`Removed props from ${d.updated} relationships!`);
+  else toast('Error: '+d.error,'error');
+}
+
+async function bulkDeleteRels() {
+  const body = {
+    rel_type: document.getElementById('brel-type').value,
+    filter_label: document.getElementById('brel-filter-label').value,
+    filter_prop: document.getElementById('brel-filter-prop').value.trim(),
+    filter_values: document.getElementById('brel-filter-vals').value.split(',').map(s=>coerceVal(s.trim())).filter(v=>v!==''),
+  };
+  if (!body.filter_prop || !body.filter_values.length) { toast('Fill filter fields','error'); return; }
+  if (!confirm(`Delete all ${body.rel_type} relationships from ${body.filter_label} where ${body.filter_prop} IN [${body.filter_values}]?`)) return;
+  const d = await api('/api/relationships/bulk/delete', {method:'POST', body:JSON.stringify(body)}).catch(()=>({success:false,error:'Network error'}));
+  if (d.success) toast(`Deleted ${d.deleted} relationships!`);
+  else toast('Error: '+d.error,'error');
+}
+
+// ============================================================
+// QUERIES
+// ============================================================
+async function runQ1() {
+  const cat = document.getElementById('q1-cat').value.trim();
+  if (!cat) { toast('Enter a category','error'); return; }
+  const d = await api(`/api/queries/products-by-category/${encodeURIComponent(cat)}`).catch(()=>({success:false}));
+  renderTable(d.success?d.data:[], 'q1-result');
+  if (!d.success) toast('Error: '+d.error,'error');
+}
+async function runQ2() {
+  const lim = document.getElementById('q2-limit').value||10;
+  const d = await api(`/api/queries/top-suppliers?limit=${lim}`).catch(()=>({success:false}));
+  renderTable(d.success?d.data:[], 'q2-result');
+}
+async function runQ3() {
+  const lim = document.getElementById('q3-limit').value||20;
+  const d = await api(`/api/queries/pending-orders?limit=${lim}`).catch(()=>({success:false}));
+  renderTable(d.success?d.data:[], 'q3-result');
+}
+async function runQ4() {
+  const lim = document.getElementById('q4-limit').value||20;
+  const d = await api(`/api/queries/transport-status?limit=${lim}`).catch(()=>({success:false}));
+  renderTable(d.success?d.data:[], 'q4-result');
+}
+async function runQ5() {
+  const id = document.getElementById('q5-id').value.trim();
+  if (!id) { toast('Enter a product ID','error'); return; }
+  const d = await api(`/api/queries/inventory-for-product/${id}`).catch(()=>({success:false}));
+  renderTable(d.success?d.data:[], 'q5-result');
+}
+async function runQ6() {
+  const label = document.getElementById('q6-label').value;
+  const func = document.getElementById('q6-func').value;
+  const prop = document.getElementById('q6-prop').value.trim();
+  if (!prop) { toast('Enter a property','error'); return; }
+  const d = await api(`/api/nodes/${label}/aggregations?func=${func}&prop=${prop}`).catch(()=>({success:false}));
+  const el = document.getElementById('q6-result');
+  if (d.success) {
+    el.innerHTML = `<div class="p-4 bg-slate-50 rounded-lg border border-slate-200">
+      <p class="text-xs text-slate-500 font-['Sora'] uppercase mb-1">Result</p>
+      <p class="text-2xl font-bold text-petroleum font-mono">${d.data.result}</p>
+      <p class="text-xs text-slate-400 mt-1">${func}(${label}.${prop})</p>
+    </div>`;
+  } else {
+    el.innerHTML = `<p class="text-red-500 text-xs">${d.error||'Error'}</p>`;
+  }
+}
+
+// ============================================================
+// ANALYTICS
+// ============================================================
+async function loadStockouts() {
+  const d = await api('/api/analytics/stockouts?limit=10').catch(()=>({success:false}));
+  const el = document.getElementById('analytics-stockouts');
+  if (!d.success||!d.data.length) { el.innerHTML='<p class="text-slate-400 text-sm">No data.</p>'; return; }
+  renderTable(d.data, 'analytics-stockouts');
+}
+async function loadReorder() {
+  const d = await api('/api/analytics/reorder?limit=10').catch(()=>({success:false}));
+  renderTable(d.success?d.data:[], 'analytics-reorder');
+}
+async function loadTopSuppliersAnalytics() {
+  const d = await api('/api/analytics/top-suppliers?limit=10').catch(()=>({success:false}));
+  renderTable(d.success?d.data:[], 'analytics-top-suppliers');
+}
+async function loadTransportOverview() {
+  const d = await api('/api/analytics/transport-overview').catch(()=>({success:false}));
+  renderTable(d.success?d.data:[], 'analytics-transport');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+checkHealth();
+loadDashboard();
+</script>
+</body>
+</html>
