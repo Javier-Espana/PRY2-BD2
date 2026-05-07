@@ -875,6 +875,14 @@ async function loadStats() {
 }
 
 const DASH_URLS = {suppliers:'/api/suppliers?limit=50',products:'/api/products?limit=50',orders:'/api/orders?limit=50'};
+const ENTITY_LIST_URLS = {
+  Supplier: '/api/suppliers?limit=100',
+  Product: '/api/products?limit=100',
+  OrderCompra: '/api/orders?limit=100',
+  Inventory: '/api/inventories?limit=100',
+  CentroDistribucion: '/api/centers?limit=100',
+  Transporte: '/api/transports?limit=100',
+};
 
 async function loadDashTable(tab) {
   const tbody = document.getElementById('d-tbody');
@@ -953,7 +961,8 @@ async function loadEnt() {
   document.getElementById('ent-title').textContent = curLabel;
   const tbody = document.getElementById('e-tbody');
   tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:#94a3b8;font-size:12px">Loading…</td></tr>';
-  const d = await api(`/api/nodes/${curLabel}?limit=100`).catch(()=>({success:false,data:[]}));
+  const url = ENTITY_LIST_URLS[curLabel] || `/api/nodes/${curLabel}?limit=100`;
+  const d = await api(url).catch(()=>({success:false,data:[]}));
   entData = d.success ? d.data : [];
   renderEnt(entData);
   document.getElementById('ent-count').textContent = entData.length ? `${entData.length} nodes loaded` : '';

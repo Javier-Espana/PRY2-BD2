@@ -60,6 +60,10 @@ def _coerce(v):
     return v
 
 
+def _missing_fields(data, required_fields):
+    return [field for field in required_fields if not data.get(field)]
+
+
 # ==================== DASHBOARD ====================
 
 @app.route('/', methods=['GET'])
@@ -199,6 +203,9 @@ def remove_node_props(label, id_value):
 def bulk_update_nodes(label):
     try:
         data = request.get_json(silent=True) or {}
+        missing = _missing_fields(data, ['filter_prop', 'filter_values', 'properties'])
+        if missing:
+            return jsonify({"success": False, "error": f"Campo requerido: {missing[0]}"}), 400
         count = sc_app.crud.add_properties_to_multiple_nodes(
             label, data.get('filter_prop'), data.get('filter_values', []),
             data.get('properties', {}))
@@ -211,6 +218,9 @@ def bulk_update_nodes(label):
 def bulk_delete_nodes(label):
     try:
         data = request.get_json(silent=True) or {}
+        missing = _missing_fields(data, ['filter_prop', 'filter_values'])
+        if missing:
+            return jsonify({"success": False, "error": f"Campo requerido: {missing[0]}"}), 400
         count = sc_app.crud.delete_multiple_nodes(
             label, data.get('filter_prop'), data.get('filter_values', []))
         return jsonify({"success": True, "deleted": count}), 200
@@ -222,6 +232,9 @@ def bulk_delete_nodes(label):
 def bulk_remove_node_props(label):
     try:
         data = request.get_json(silent=True) or {}
+        missing = _missing_fields(data, ['filter_prop', 'filter_values', 'property_names'])
+        if missing:
+            return jsonify({"success": False, "error": f"Campo requerido: {missing[0]}"}), 400
         count = sc_app.crud.remove_properties_from_multiple_nodes(
             label, data.get('filter_prop'), data.get('filter_values', []),
             data.get('property_names', []))
@@ -498,6 +511,9 @@ def delete_relationship():
 def bulk_update_relationships():
     try:
         data = request.get_json(silent=True) or {}
+        missing = _missing_fields(data, ['rel_type', 'filter_label', 'filter_prop', 'filter_values', 'properties'])
+        if missing:
+            return jsonify({"success": False, "error": f"Campo requerido: {missing[0]}"}), 400
         count = sc_app.crud.add_properties_to_multiple_relationships(
             rel_type=data['rel_type'],
             filter_label=data['filter_label'],
@@ -516,6 +532,9 @@ def bulk_update_relationships():
 def bulk_remove_relationship_props():
     try:
         data = request.get_json(silent=True) or {}
+        missing = _missing_fields(data, ['rel_type', 'filter_label', 'filter_prop', 'filter_values', 'property_names'])
+        if missing:
+            return jsonify({"success": False, "error": f"Campo requerido: {missing[0]}"}), 400
         count = sc_app.crud.remove_properties_from_multiple_relationships(
             rel_type=data['rel_type'],
             filter_label=data['filter_label'],
@@ -534,6 +553,9 @@ def bulk_remove_relationship_props():
 def bulk_delete_relationships():
     try:
         data = request.get_json(silent=True) or {}
+        missing = _missing_fields(data, ['rel_type', 'filter_label', 'filter_prop', 'filter_values'])
+        if missing:
+            return jsonify({"success": False, "error": f"Campo requerido: {missing[0]}"}), 400
         count = sc_app.crud.delete_multiple_relationships(
             rel_type=data['rel_type'],
             filter_label=data['filter_label'],
