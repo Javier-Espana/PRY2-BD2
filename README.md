@@ -1,122 +1,113 @@
-# Proyecto: Neo4j — Cadena de Suministro (Supply Chain)
+# Neo4j Supply Chain — PRY2-BD2
 
-**Estado**: En progreso — reestructurado a dominio de cadena de suministros
 
-Este repositorio implementa un modelo de dominio para la cadena de suministros
-usando Neo4j. Provee utilidades para generar datos de ejemplo, importar desde CSV,
-realizar operaciones CRUD básicas, y exponer una API REST mínima para explorar
-entidades clave (proveedores, productos, órdenes, inventarios, centros y transporte).
+### Vídeo: https://youtu.be/JCF7pjkjz5Y
 
-## Estructura del Proyecto
+### Documento Etapa 1: docs\Proyecto 2 - Planteamiento.pdf
 
-```
-PRY2-BD2/
-├── src/
-│   ├── app.py                    # Aplicación principal (SupplyChainApp)
-│   ├── api.py                    # API REST (Flask)
-│   ├── demo.py                   # Demo CLI
-│   ├── schema.py                 # Definiciones de esquema
-│   ├── crud_operations.py        # Operaciones CRUD reutilizables
-│   ├── queries.py                # Consultas Cypher específicas
-│   ├── recommendation.py         # Motor de análisis / analytics
-│   ├── data_generator.py         # Generador de datos CSV (supply-chain)
-│   ├── importer.py               # Importador CSV -> Neo4j (supply-chain)
-│   ├── neo4j_conn.py             # Wrapper de conexión a Neo4j
-│   └── config.py                 # Carga de `.env`
-├── docs/
-│   ├── modelo_datos.tex          # Documento LaTeX con modelo
-├── tests/
-├── main.py                       # Punto de entrada único (lazy imports)
-├── requirements.txt
-└── README.md
-```
 
-## Inicio Rápido
 
-1. Crear y activar un entorno virtual e instalar dependencias:
+
+Sistema de cadena de suministros (bebidas/distribución) sobre Neo4j con API REST, dashboard web y consola interactiva. Cubre todos los criterios de la rúbrica CC3089.
+
+## Setup
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-2. Crear un archivo `.env` en la raíz con las credenciales (no subir este archivo):
+Crea `.env` (copia `.env.example`):
 
 ```
-NEO4J_URI=bolt://localhost:7687
-NEO4J_USERNAME=neo4j
-NEO4J_PASSWORD=your_password
+NEO4J_URI=neo4j+s://<host>
+NEO4J_USER=neo4j
+NEO4J_PASSWORD=<password>
 NEO4J_DATABASE=neo4j
 ```
 
-3. Inicializar la base de datos con datos de ejemplo (genera CSV y los importa):
+## Comandos
 
-```bash
-python main.py --mode init
-```
+| Comando                           | Descripción                                              |
+| --------------------------------- | --------------------------------------------------------- |
+| `python main.py --mode check`   | Verificar conexión y estadísticas                       |
+| `python main.py --mode init`    | Generar e importar 5,400+ nodos                           |
+| `python main.py --mode api`     | Iniciar API REST + dashboard en `http://localhost:5000` |
+| `python main.py --mode console` | Consola interactiva con menús                            |
+| `python main.py --mode demo`    | Demo automatizada de toda la rúbrica                     |
+| `python main.py --mode test`    | Ejecutar suite de tests                                   |
 
-4. Iniciar la API REST:
+## API Endpoints
 
-```bash
-python main.py --mode api
-# Acceder a: http://localhost:5000/api/
-```
+**Base:** `http://localhost:5000`
 
-5. Ejecutar la demo local (sin Flask):
+### Nodos genéricos
 
-```bash
-python main.py --mode demo
-```
+| Método    | Ruta                                          | Descripción                                 |
+| ---------- | --------------------------------------------- | -------------------------------------------- |
+| `POST`   | `/api/nodes`                                | Crear nodo (1 ó 2+ labels, con propiedades) |
+| `GET`    | `/api/nodes/<label>`                        | Listar nodos por label                       |
+| `GET`    | `/api/nodes/<label>/<id>`                   | Obtener nodo por ID                          |
+| `PATCH`  | `/api/nodes/<label>/<id>`                   | Agregar/actualizar propiedades               |
+| `DELETE` | `/api/nodes/<label>/<id>`                   | Eliminar nodo                                |
+| `POST`   | `/api/nodes/<label>/<id>/remove-properties` | Eliminar propiedades específicas            |
+| `POST`   | `/api/nodes/<label>/bulk/update`            | Actualizar props en múltiples nodos         |
+| `POST`   | `/api/nodes/<label>/bulk/delete`            | Eliminar múltiples nodos                    |
+| `POST`   | `/api/nodes/<label>/bulk/remove-properties` | Eliminar props de múltiples nodos           |
+| `GET`    | `/api/nodes/<label>/aggregations`           | COUNT / AVG / MAX / MIN / SUM                |
 
-## Endpoints principales (ejemplos)
+### Entidades específicas
 
-POST   /api/init                Inicializar BD (genera e importa CSV)
-GET    /api/stats               Estadísticas del grafo
-GET    /api/suppliers           Listar proveedores
-GET    /api/suppliers/<id>      Detalle proveedor
-GET    /api/products            Listar productos
-GET    /api/products/<id>       Detalle producto
-GET    /api/orders              Listar órdenes
-GET    /api/inventories         Listar inventarios
-GET    /api/centers             Listar centros de distribución
-GET    /api/transports          Listar transportes
-GET    /api/health              Estado de la aplicación
+`GET/POST /api/suppliers` · `GET/DELETE /api/suppliers/<id>`
+`GET/POST /api/products` · `GET/DELETE /api/products/<id>`
+`GET/POST /api/orders` · `GET/POST /api/inventories`
+`GET/POST /api/centers` · `GET/POST /api/transports`
 
-Consulta `src/api.py` para más rutas.
+### Relaciones
 
-## Notas de seguridad
+| Método    | Ruta                                          | Descripción                              |
+| ---------- | --------------------------------------------- | ----------------------------------------- |
+| `POST`   | `/api/relationships`                        | Crear relación con ≥3 propiedades       |
+| `PATCH`  | `/api/relationships`                        | Agregar/actualizar propiedades            |
+| `DELETE` | `/api/relationships`                        | Eliminar relación                        |
+| `POST`   | `/api/relationships/remove-properties`      | Eliminar props de relación               |
+| `POST`   | `/api/relationships/bulk/update`            | Actualizar props en múltiples relaciones |
+| `POST`   | `/api/relationships/bulk/remove-properties` | Eliminar props de múltiples relaciones   |
+| `POST`   | `/api/relationships/bulk/delete`            | Eliminar múltiples relaciones            |
 
-- Las credenciales se deben mantener en `.env` y **no** subir al repositorio.
-- `.gitignore` ya incluye `.env`.
+### Consultas y analytics
 
-## Verificación rápida
+| Ruta                                            | Descripción                    |
+| ----------------------------------------------- | ------------------------------- |
+| `GET /api/queries/products-by-category/<cat>` | Productos por categoría        |
+| `GET /api/queries/top-suppliers`              | Top proveedores por rating      |
+| `GET /api/queries/pending-orders`             | Órdenes pendientes             |
+| `GET /api/queries/transport-status`           | Estado de transportes           |
+| `GET /api/queries/inventory-for-product/<id>` | Inventario por producto         |
+| `GET /api/analytics/stockouts`                | Detección de quiebres de stock |
+| `GET /api/analytics/reorder`                  | Sugerencias de reorden          |
+| `GET /api/analytics/top-suppliers`            | Top proveedores por volumen     |
+| `GET /api/analytics/transport-overview`       | Resumen de transportes          |
+| `GET /api/stats`                              | Estadísticas del grafo         |
+| `POST /api/init`                              | Inicializar base de datos       |
 
-1. Asegúrate de que Neo4j esté accesible y que `.env` tenga valores correctos.
-2. Ejecuta `python main.py --mode init` y revisa la salida para confirmar que
-   la importación terminó sin errores.
-3. Inicia la API y prueba `GET /api/stats`.
+## Rúbrica cubierta
 
-Ejemplo:
-
-```bash
-python main.py --mode init
-python main.py --mode api
-curl http://localhost:5000/api/stats
-```
-
-## Tests
-
-`tests/test_connection.py` contiene una prueba básica de humo que verifica
-que las variables de entorno están configuradas.
-
-## Documentación adicional
-
-Ver [docs/modelo_datos.tex](docs/modelo_datos.tex) para el modelo de datos en LaTeX.
-
----
-
-Si quieres, puedo ahora ejecutar una verificación de conectividad contra Neo4j
-usando las credenciales en `.env` (esperando 60 segundos antes de conectar),
-o bien puedo proceder a actualizar/ejecutar pruebas adicionales. Indica qué
-prefieres que haga a continuación.
+| Categoría   | Criterio                                                               | ✓ |
+| ------------ | ---------------------------------------------------------------------- | -- |
+| Modelado     | Caso de uso: cadena de suministros                                     | ✓ |
+| Modelado     | 6 labels distintas con 6+ propiedades cada una                         | ✓ |
+| Modelado     | 11 tipos de relaciones con 3+ propiedades                              | ✓ |
+| Modelado     | Todos los tipos de datos (String, Float, Integer, Boolean, List, Date) | ✓ |
+| Set de datos | Carga CSV (5,410+ nodos, grafo conexo)                                 | ✓ |
+| App          | Crear nodo con 1 label                                                 | ✓ |
+| App          | Crear nodo con 2+ labels                                               | ✓ |
+| App          | Crear nodo con 5+ propiedades                                          | ✓ |
+| App          | Visualización de nodos (1, muchos, agregados)                         | ✓ |
+| App          | Gestión de propiedades en nodos (add/update/remove single y bulk)     | ✓ |
+| App          | Creación de relación con 3+ propiedades                              | ✓ |
+| App          | Gestión de relaciones (add/update/remove single y bulk)               | ✓ |
+| App          | Eliminación de nodos (1 y múltiples)                                 | ✓ |
+| App          | Eliminación de relaciones (1 y múltiples)                            | ✓ |
+| App          | 6 consultas Cypher parametrizables                                     | ✓ |
+| Extras       | 4 algoritmos de Data Science                                           | ✓ |
+| Extras       | Interfaz gráfica (dashboard web funcional)                            | ✓ |

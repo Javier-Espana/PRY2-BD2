@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1.0" name="viewport"/>
+<title>Nook Inc. · Control Panel</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script src="https://unpkg.com/vis-network@9.1.9/standalone/umd/vis-network.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#f4f6f8;color:#1a1c1f;min-height:100vh}
+.sidebar{background:#0b2d34;width:220px;min-height:100vh;position:fixed;top:0;left:0;display:flex;flex-direction:column;z-index:50}
+.sidebar-logo{padding:20px 16px 14px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sidebar-logo h1{color:#fff;font-family:'Sora';font-size:17px;font-weight:700;letter-spacing:-.3px}
+.sidebar-logo p{color:#6b8fa3;font-size:10px;text-transform:uppercase;letter-spacing:.1em;margin-top:2px}
+.nav-link{display:flex;align-items:center;gap:10px;padding:9px 16px;color:#8faebb;font-size:13.5px;font-weight:500;cursor:pointer;transition:all .15s;border-left:3px solid transparent;user-select:none}
+.nav-link:hover{color:#fff;background:rgba(255,255,255,.06)}
+.nav-link.active{color:#fff;background:rgba(255,255,255,.1);border-left-color:#F06B54}
+.nav-link .ms{font-size:18px}
+.main{margin-left:220px;display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:#fff;height:56px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:40;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.topbar-title{font-family:'Sora';font-size:15px;font-weight:700;color:#0b2d34}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:700;font-family:'Sora'}
+.badge-ok{background:#ecfdf5;color:#059669;border:1px solid #a7f3d0}
+.badge-err{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}
+.badge-wait{background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+.section{display:none}.section.active{display:block}
+.page-header{margin-bottom:20px}
+.page-header h1{font-family:'Sora';font-size:26px;font-weight:700;color:#0b2d34;margin-bottom:3px}
+.page-header p{color:#64748b;font-size:13px}
+.card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:18px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card-title{font-family:'Sora';font-size:13px;font-weight:700;color:#0b2d34;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.stat-card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px 16px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.04);transition:box-shadow .2s}
+.stat-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.08)}
+.stat-label{font-size:10px;font-family:'Sora';font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#64748b;margin-bottom:4px}
+.stat-val{font-size:26px;font-weight:700;color:#0b2d34;font-family:'Sora'}
+.tab-bar{display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap}
+.tab-btn{padding:5px 13px;border-radius:6px;font-size:12px;font-weight:600;font-family:'Sora';cursor:pointer;color:#64748b;transition:all .15s;border:1px solid transparent}
+.tab-btn:hover{background:#f1f5f9;color:#0b2d34}
+.tab-btn.active{background:#0b2d34;color:#fff;border-color:#0b2d34}
+.result-table{width:100%;border-collapse:collapse;font-size:12.5px}
+.result-table th{background:#f8fafc;padding:7px 10px;text-align:left;font-family:'Sora';font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#64748b;border-bottom:1px solid #e5e7eb;white-space:nowrap}
+.result-table td{padding:7px 10px;border-bottom:1px solid #f1f5f9;color:#374151;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.result-table tr:last-child td{border-bottom:none}
+.result-table tr:hover td{background:#fafbff}
+.inp{width:100%;padding:7px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;font-family:'Inter';outline:none;transition:border .15s;background:#fff}
+.inp:focus{border-color:#0b2d34;box-shadow:0 0 0 2px rgba(11,45,52,.12)}
+.inp::placeholder{color:#9ca3af}
+select.inp{appearance:auto;cursor:pointer}
+.btn{padding:7px 16px;border-radius:6px;font-size:12.5px;font-weight:600;font-family:'Sora';cursor:pointer;border:none;transition:all .15s;display:inline-flex;align-items:center;gap:5px}
+.btn-dark{background:#0b2d34;color:#fff}.btn-dark:hover{opacity:.87}
+.btn-coral{background:#F06B54;color:#fff}.btn-coral:hover{opacity:.87}
+.btn-ghost{background:#f1f5f9;color:#374151;border:1px solid #e2e8f0}.btn-ghost:hover{background:#e5e7eb}
+.btn-danger{background:#ef4444;color:#fff}.btn-danger:hover{opacity:.87}
+.btn-sm{padding:4px 10px;font-size:11.5px}
+.btn-xs{padding:3px 8px;font-size:11px}
+.lbl{font-size:11px;font-weight:600;font-family:'Sora';text-transform:uppercase;letter-spacing:.05em;color:#64748b;margin-bottom:4px;display:block}
+.form-row{display:grid;gap:8px;margin-bottom:8px}
+.form-row-2{grid-template-columns:1fr 1fr}
+.hint{font-size:11px;color:#94a3b8;margin-top:3px}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:20px}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:14px;padding:24px;width:100%;max-width:520px;box-shadow:0 20px 60px rgba(0,0,0,.2);max-height:90vh;overflow-y:auto}
+.modal-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.modal-hd h3{font-family:'Sora';font-size:16px;font-weight:700;color:#0b2d34}
+.close-btn{background:none;border:none;cursor:pointer;color:#94a3b8;padding:4px;border-radius:4px;transition:color .15s}
+.close-btn:hover{color:#374151}
+.toast{position:fixed;bottom:20px;right:20px;z-index:500;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;transform:translateY(60px);opacity:0;transition:all .25s;pointer-events:none;max-width:360px;word-break:break-word}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ok{background:#059669;color:#fff}
+.toast.err{background:#dc2626;color:#fff}
+.toast.info{background:#0b2d34;color:#fff}
+#graph-container{width:100%;height:560px;border:1px solid #e5e7eb;border-radius:8px;background:#fafbff}
+.graph-legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;color:#374151}
+.legend-dot{width:10px;height:10px;border-radius:50%}
+.node-panel{background:#f8fafc;border:1px solid #e5e7eb;border-radius:8px;padding:14px;font-size:12.5px;min-height:60px}
+.node-panel p{color:#94a3b8;font-size:12px}
+.progress-bar{height:6px;border-radius:3px;background:#e5e7eb;overflow:hidden}
+.progress-fill{height:100%;border-radius:3px;background:#0b2d34;transition:width .3s}
+.rel-info-box{background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:10px;font-size:11.5px;color:#0369a1;margin-bottom:10px}
+.rel-info-box table{width:100%;border-collapse:collapse}
+.rel-info-box td{padding:2px 4px}
+.empty-state{text-align:center;padding:40px 20px;color:#94a3b8}
+.empty-state .ms{font-size:40px;display:block;margin-bottom:8px;color:#d1d5db}
+.empty-state p{font-size:13px}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-logo" style="display:flex;align-items:center;gap:10px">
+    <img src="/app/icon/Icon.png" alt="logo" style="width:34px;height:34px;border-radius:6px;object-fit:cover;flex-shrink:0"/>
+    <div>
+      <h1>Nook Inc.</h1>
+      <p>Control Panel</p>
+    </div>
+  </div>
+  <div style="flex:1;padding:10px 0">
+    <div class="nav-link active" onclick="go('dashboard')"><span class="ms material-symbols-outlined" style="font-variation-settings:'FILL' 1">dashboard</span>Dashboard</div>
+    <div class="nav-link" onclick="go('entities')"><span class="ms material-symbols-outlined">account_tree</span>Entities</div>
+    <div class="nav-link" onclick="go('relationships')"><span class="ms material-symbols-outlined">device_hub</span>Relationships</div>
+    <div class="nav-link" onclick="go('graph')"><span class="ms material-symbols-outlined">hub</span>Graph View</div>
+    <div class="nav-link" onclick="go('queries')"><span class="ms material-symbols-outlined">terminal</span>Cypher Queries</div>
+    <div class="nav-link" onclick="go('analytics')"><span class="ms material-symbols-outlined">leaderboard</span>Analytics</div>
+  </div>
+  <div style="padding:12px 16px;border-top:1px solid rgba(255,255,255,.08)">
+    <span id="side-status" class="flex items-center gap-2 text-xs" style="color:#6b8fa3"><span class="dot" style="background:#6b8fa3"></span>Connecting…</span>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span id="page-title" class="topbar-title">Dashboard</span>
+      <span id="db-badge" class="badge badge-wait"><span class="dot" style="background:#94a3b8"></span>Checking…</span>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button onclick="openModal('modal-csv')" class="btn btn-ghost btn-sm"><span class="material-symbols-outlined" style="font-size:15px">upload_file</span>Import CSV</button>
+      <button onclick="initDB()" id="btn-init" class="btn btn-dark btn-sm"><span class="material-symbols-outlined" style="font-size:15px">refresh</span>Initialize DB</button>
+    </div>
+  </header>
+
+  <main style="flex:1;padding:24px;overflow-y:auto">
+
+  <!-- ========== DASHBOARD ========== -->
+  <div id="section-dashboard" class="section active">
+    <div class="page-header">
+      <h1>Dashboard Overview</h1>
+      <p>Métricas del grafo en tiempo real · <a href="#" onclick="loadDashboard();return false" style="color:#0b2d34;font-weight:600">↻ Refresh</a></p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:18px">
+      <div class="stat-card"><div class="stat-label">Total Nodes</div><div class="stat-val" id="s-nodes">—</div></div>
+      <div class="stat-card"><div class="stat-label">Relationships</div><div class="stat-val" id="s-rels">—</div></div>
+      <div class="stat-card"><div class="stat-label">Suppliers</div><div class="stat-val" id="s-sup">—</div></div>
+      <div class="stat-card"><div class="stat-label">Products</div><div class="stat-val" id="s-prod">—</div></div>
+      <div class="stat-card"><div class="stat-label">Orders</div><div class="stat-val" id="s-ord">—</div></div>
+      <div class="stat-card"><div class="stat-label">Dist. Centers</div><div class="stat-val" id="s-ctr">—</div></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:14px">
+      <!-- Entity table -->
+      <div class="card" style="padding:0;overflow:hidden">
+        <div style="padding:12px 16px 0;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <div class="tab-bar" style="margin-bottom:0">
+            <button class="tab-btn active" onclick="dashTab(this,'suppliers')">Suppliers</button>
+            <button class="tab-btn" onclick="dashTab(this,'products')">Products</button>
+            <button class="tab-btn" onclick="dashTab(this,'orders')">Orders</button>
+          </div>
+          <input id="dash-filter" type="text" class="inp" placeholder="Filter…" style="width:160px;padding:5px 9px;margin-bottom:10px" oninput="filterDash(this.value)"/>
+        </div>
+        <div style="overflow-x:auto;max-height:360px">
+          <table class="result-table"><thead id="d-thead"></thead><tbody id="d-tbody"><tr><td colspan="5" class="empty-state"><span class="material-symbols-outlined">hourglass_empty</span><p>Loading data…</p></td></tr></tbody></table>
+        </div>
+      </div>
+
+      <!-- Sidebar analytics -->
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="card">
+          <div class="card-title"><span class="material-symbols-outlined" style="font-size:16px;color:#059669">storefront</span>Top Suppliers by Volume</div>
+          <div id="top-sup-chart">
+            <div class="empty-state" style="padding:16px"><p>Loading…</p></div>
+          </div>
+        </div>
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <div class="card-title" style="margin-bottom:0"><span class="material-symbols-outlined" style="font-size:16px;color:#dc2626">warning</span>Stockout Risks</div>
+            <span style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;font-size:10px;font-weight:700;font-family:'Sora';padding:1px 7px;border-radius:99px">Critical</span>
+          </div>
+          <div id="stockout-list">
+            <div class="empty-state" style="padding:16px"><p>Loading…</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== ENTITIES ========== -->
+  <div id="section-entities" class="section">
+    <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+      <div>
+        <h1>Entities</h1>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0;margin-top:4px">
+        <button onclick="openCreateModal()" class="btn btn-dark btn-sm"><span class="material-symbols-outlined" style="font-size:15px">add</span>Create (1 label)</button>
+        <button onclick="openModal('modal-multilabel')" class="btn btn-ghost btn-sm"><span class="material-symbols-outlined" style="font-size:15px">label</span>2+ Labels</button>
+      </div>
+    </div>
+
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="entTab(this,'Supplier')">Suppliers</button>
+      <button class="tab-btn" onclick="entTab(this,'Product')">Products</button>
+      <button class="tab-btn" onclick="entTab(this,'OrderCompra')">Orders</button>
+      <button class="tab-btn" onclick="entTab(this,'Inventory')">Inventories</button>
+      <button class="tab-btn" onclick="entTab(this,'CentroDistribucion')">Centers</button>
+      <button class="tab-btn" onclick="entTab(this,'Transporte')">Transports</button>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 300px;gap:14px">
+      <!-- Table -->
+      <div class="card" style="padding:0;overflow:hidden">
+        <div style="padding:10px 14px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;gap:8px">
+          <span id="ent-title" style="font-family:'Sora';font-size:12px;font-weight:700;color:#0b2d34">Suppliers</span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <input id="ent-filter" type="text" class="inp" placeholder="Filter rows…" style="width:150px;padding:5px 9px" oninput="filterEnt(this.value)"/>
+            <button onclick="loadEnt()" class="btn btn-ghost btn-xs"><span class="material-symbols-outlined" style="font-size:14px">refresh</span></button>
+          </div>
+        </div>
+        <div style="overflow:auto;max-height:420px">
+          <table class="result-table"><thead id="e-thead"></thead><tbody id="e-tbody"><tr><td colspan="8"><div class="empty-state"><span class="material-symbols-outlined">table_rows</span><p>Select an entity tab above</p></div></td></tr></tbody></table>
+        </div>
+        <div style="padding:8px 14px;border-top:1px solid #f1f5f9;font-size:11px;color:#94a3b8" id="ent-count"></div>
+      </div>
+
+      <!-- Operations -->
+      <div style="display:flex;flex-direction:column;gap:10px;overflow-y:auto;max-height:500px">
+
+        <!-- Aggregations -->
+        <div class="card">
+          <div class="card-title"><span class="material-symbols-outlined" style="font-size:15px;color:#7c3aed">functions</span>Aggregation Query</div>
+          <p class="hint" style="margin-bottom:8px">Consulta agregada sobre la entidad activa. Ejemplo: AVG(rating), COUNT(id_proveedor)</p>
+          <div style="display:flex;gap:6px;margin-bottom:6px">
+            <select id="agg-func" class="inp" style="flex:1;padding:6px 8px">
+              <option>COUNT</option><option>AVG</option><option>MAX</option><option>MIN</option><option>SUM</option>
+            </select>
+            <input id="agg-prop" type="text" class="inp" style="flex:1;padding:6px 8px" placeholder="property" value="rating"/>
+          </div>
+          <button onclick="runAgg()" class="btn btn-dark" style="width:100%;justify-content:center">Run Aggregation</button>
+          <div id="agg-result" style="margin-top:8px;font-size:13px;color:#374151;font-family:monospace"></div>
+        </div>
+
+        <!-- Add/Update single node props -->
+        <div class="card">
+          <div class="card-title"><span class="material-symbols-outlined" style="font-size:15px;color:#0369a1">edit_note</span>Add/Update Node Properties</div>
+          <p class="hint" style="margin-bottom:8px">Agrega o actualiza propiedades en un nodo específico.</p>
+          <label class="lbl">ID value</label>
+          <input id="sp-id" type="text" class="inp" placeholder="e.g. 42" style="margin-bottom:6px"/>
+          <label class="lbl">Properties (key=value, one per line)</label>
+          <textarea id="sp-props" class="inp" rows="3" placeholder="rating=4.9&#10;activo=true&#10;nota=nuevo" style="resize:none;font-family:monospace;font-size:12px"></textarea>
+          <button onclick="updateSingleNodeProps()" class="btn btn-dark" style="width:100%;justify-content:center;margin-top:6px">Update Node</button>
+        </div>
+
+        <!-- Remove single node props -->
+        <div class="card">
+          <div class="card-title"><span class="material-symbols-outlined" style="font-size:15px;color:#dc7c0a">remove_circle_outline</span>Remove Node Properties</div>
+          <label class="lbl">ID value</label>
+          <input id="rsp-id" type="text" class="inp" placeholder="e.g. 42" style="margin-bottom:6px"/>
+          <label class="lbl">Properties to remove (comma-sep)</label>
+          <input id="rsp-props" type="text" class="inp" placeholder="e.g. nota,descuento,tag_interno"/>
+          <button onclick="removeSingleNodeProps()" class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:6px">Remove Properties</button>
+        </div>
+
+        <!-- Bulk update -->
+        <div class="card">
+          <div class="card-title"><span class="material-symbols-outlined" style="font-size:15px;color:#0b7c5c">sync</span>Bulk Update Properties</div>
+          <p class="hint" style="margin-bottom:8px">Actualiza/agrega props en múltiples nodos que coincidan con un filtro.</p>
+          <label class="lbl">Filter property</label>
+          <input id="bu-fp" type="text" class="inp" placeholder="e.g. pais" style="margin-bottom:5px"/>
+          <label class="lbl">Filter values (comma-sep)</label>
+          <input id="bu-fv" type="text" class="inp" placeholder="e.g. Guatemala,México" style="margin-bottom:5px"/>
+          <label class="lbl">New property name</label>
+          <input id="bu-pk" type="text" class="inp" placeholder="e.g. verificado" style="margin-bottom:5px"/>
+          <label class="lbl">New property value</label>
+          <input id="bu-pv" type="text" class="inp" placeholder="e.g. true"/>
+          <button onclick="bulkUpdate()" class="btn btn-dark" style="width:100%;justify-content:center;margin-top:6px">Bulk Update</button>
+        </div>
+
+        <!-- Bulk remove props -->
+        <div class="card">
+          <div class="card-title"><span class="material-symbols-outlined" style="font-size:15px;color:#b45309">delete_sweep</span>Bulk Remove Properties</div>
+          <label class="lbl">Filter property</label>
+          <input id="brp-fp" type="text" class="inp" placeholder="e.g. pais" style="margin-bottom:5px"/>
+          <label class="lbl">Filter values (comma-sep)</label>
+          <input id="brp-fv" type="text" class="inp" placeholder="e.g. Guatemala,México" style="margin-bottom:5px"/>
+          <label class="lbl">Properties to remove (comma-sep)</label>
+          <input id="brp-props" type="text" class="inp" placeholder="e.g. nota,tag_interno"/>
+          <button onclick="bulkRemoveProps()" class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:6px">Bulk Remove Props</button>
+        </div>
+
+        <!-- Bulk delete -->
+        <div class="card" style="border-color:#fecaca">
+          <div class="card-title"><span class="material-symbols-outlined" style="font-size:15px;color:#dc2626">delete_forever</span>Bulk Delete Nodes</div>
+          <label class="lbl">Filter property</label>
+          <input id="bd-fp" type="text" class="inp" placeholder="e.g. activo" style="margin-bottom:5px"/>
+          <label class="lbl">Filter values (comma-sep)</label>
+          <input id="bd-fv" type="text" class="inp" placeholder="e.g. false"/>
+          <button onclick="bulkDelete()" class="btn btn-danger" style="width:100%;justify-content:center;margin-top:6px">Bulk Delete Nodes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== RELATIONSHIPS ========== -->
+  <div id="section-relationships" class="section">
+    <div class="page-header">
+      <h1>Relationships</h1>
+      <p>Crear, gestionar propiedades y eliminar relaciones entre nodos del grafo</p>
+    </div>
+
+    <!-- Reference box -->
+    <div class="rel-info-box" style="margin-bottom:16px">
+      <strong style="display:block;margin-bottom:6px">Referencia rápida — IDs usados por label:</strong>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;font-size:11px">
+        <span><b>Supplier</b> → id_proveedor</span><span><b>Product</b> → id_producto</span><span><b>OrderCompra</b> → id_orden</span>
+        <span><b>Inventory</b> → id_inventario</span><span><b>CentroDistribucion</b> → id_centro</span><span><b>Transporte</b> → id_transporte</span>
+      </div>
+      <strong style="display:block;margin-top:8px;margin-bottom:4px">Tipos de relaciones válidos:</strong>
+      <div style="font-size:11px;color:#0369a1">SUMINISTRA · RECIBE_ORDEN · INCLUYE · SE_ENVIA_POR · ALMACENADO_EN · UBICADO_EN · LLEGA_A · SALE_DE · GESTIONA · REQUIERE · DESTINO</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+
+      <!-- Create -->
+      <div class="card">
+        <div class="card-title"><span class="material-symbols-outlined" style="font-size:16px;color:#059669">add_link</span>Create Relationship (≥3 props)</div>
+        <div class="form-row form-row-2">
+          <div>
+            <label class="lbl">From Label</label>
+            <select id="cr-fl" class="inp">
+              <option>Supplier</option><option>Product</option><option>OrderCompra</option><option>Inventory</option><option>CentroDistribucion</option><option>Transporte</option>
+            </select>
+          </div>
+          <div>
+            <label class="lbl">From ID <span class="hint" style="display:inline">(e.g. 1)</span></label>
+            <input id="cr-fi" type="text" class="inp" placeholder="e.g. 42"/>
+          </div>
+          <div>
+            <label class="lbl">To Label</label>
+            <select id="cr-tl" class="inp">
+              <option>Product</option><option>Supplier</option><option>OrderCompra</option><option>Inventory</option><option>CentroDistribucion</option><option>Transporte</option>
+            </select>
+          </div>
+          <div>
+            <label class="lbl">To ID</label>
+            <input id="cr-ti" type="text" class="inp" placeholder="e.g. 100"/>
+          </div>
+        </div>
+        <label class="lbl">Relationship Type</label>
+        <select id="cr-type" class="inp" style="margin-bottom:8px">
+          <option>SUMINISTRA</option><option>RECIBE_ORDEN</option><option>INCLUYE</option><option>SE_ENVIA_POR</option><option>ALMACENADO_EN</option><option>UBICADO_EN</option><option>LLEGA_A</option><option>SALE_DE</option><option>GESTIONA</option><option>REQUIERE</option><option>DESTINO</option>
+        </select>
+        <label class="lbl">Properties — mínimo 3 (key=value, one per line)</label>
+        <textarea id="cr-props" class="inp" rows="4" placeholder="fecha=2026-01-15&#10;costo=250.0&#10;prioridad=ALTA&#10;estado=ACTIVO" style="resize:none;font-family:monospace;font-size:12px;margin-bottom:8px"></textarea>
+        <button onclick="createRel()" class="btn btn-dark" style="width:100%;justify-content:center">Create Relationship</button>
+      </div>
+
+      <!-- Manage props -->
+      <div class="card">
+        <div class="card-title"><span class="material-symbols-outlined" style="font-size:16px;color:#7c3aed">edit</span>Manage Single Relationship Props</div>
+        <div class="form-row form-row-2">
+          <div>
+            <label class="lbl">From Label</label>
+            <select id="mr-fl" class="inp"><option>Supplier</option><option>Product</option><option>OrderCompra</option><option>Inventory</option><option>CentroDistribucion</option><option>Transporte</option></select>
+          </div>
+          <div><label class="lbl">From ID</label><input id="mr-fi" type="text" class="inp" placeholder="e.g. 42"/></div>
+          <div>
+            <label class="lbl">To Label</label>
+            <select id="mr-tl" class="inp"><option>Product</option><option>Supplier</option><option>OrderCompra</option><option>Inventory</option><option>CentroDistribucion</option><option>Transporte</option></select>
+          </div>
+          <div><label class="lbl">To ID</label><input id="mr-ti" type="text" class="inp" placeholder="e.g. 100"/></div>
+        </div>
+        <label class="lbl">Rel. Type</label>
+        <select id="mr-type" class="inp" style="margin-bottom:8px"><option>SUMINISTRA</option><option>RECIBE_ORDEN</option><option>INCLUYE</option><option>SE_ENVIA_POR</option><option>ALMACENADO_EN</option><option>UBICADO_EN</option><option>LLEGA_A</option><option>SALE_DE</option><option>GESTIONA</option><option>REQUIERE</option><option>DESTINO</option></select>
+        <label class="lbl">Add/Update props (key=value per line)</label>
+        <textarea id="mr-set" class="inp" rows="2" placeholder="costo=300&#10;prioridad=URGENTE" style="resize:none;font-family:monospace;font-size:12px;margin-bottom:6px"></textarea>
+        <label class="lbl">Remove props (comma-sep keys)</label>
+        <input id="mr-rm" type="text" class="inp" placeholder="e.g. nota_interna,descuento" style="margin-bottom:8px"/>
+        <div style="display:flex;gap:6px">
+          <button onclick="updateRelProps()" class="btn btn-dark" style="flex:1;justify-content:center">Update Props</button>
+          <button onclick="removeRelProps()" class="btn btn-ghost" style="flex:1;justify-content:center">Remove Props</button>
+        </div>
+      </div>
+
+      <!-- Delete single -->
+      <div class="card" style="border-color:#fecaca">
+        <div class="card-title"><span class="material-symbols-outlined" style="font-size:16px;color:#dc2626">link_off</span>Delete Single Relationship</div>
+        <div class="form-row form-row-2">
+          <div><label class="lbl">From Label</label><select id="dr-fl" class="inp"><option>Supplier</option><option>Product</option><option>OrderCompra</option><option>Inventory</option><option>CentroDistribucion</option><option>Transporte</option></select></div>
+          <div><label class="lbl">From ID</label><input id="dr-fi" type="text" class="inp" placeholder="e.g. 42"/></div>
+          <div><label class="lbl">To Label</label><select id="dr-tl" class="inp"><option>Product</option><option>Supplier</option><option>OrderCompra</option><option>Inventory</option><option>CentroDistribucion</option><option>Transporte</option></select></div>
+          <div><label class="lbl">To ID</label><input id="dr-ti" type="text" class="inp" placeholder="e.g. 100"/></div>
+        </div>
+        <label class="lbl">Rel. Type</label>
+        <select id="dr-type" class="inp" style="margin-bottom:8px"><option>SUMINISTRA</option><option>RECIBE_ORDEN</option><option>INCLUYE</option><option>SE_ENVIA_POR</option><option>ALMACENADO_EN</option><option>UBICADO_EN</option><option>LLEGA_A</option><option>SALE_DE</option><option>GESTIONA</option><option>REQUIERE</option><option>DESTINO</option></select>
+        <button onclick="deleteSingleRel()" class="btn btn-danger" style="width:100%;justify-content:center">Delete Relationship</button>
+      </div>
+
+      <!-- Bulk rel ops -->
+      <div class="card" style="border-color:#fed7aa">
+        <div class="card-title"><span class="material-symbols-outlined" style="font-size:16px;color:#c2410c">sync_alt</span>Bulk Relationship Operations</div>
+        <p class="hint" style="margin-bottom:8px">Opera sobre múltiples relaciones filtrando por un nodo origen.</p>
+        <div class="form-row form-row-2">
+          <div>
+            <label class="lbl">Rel. Type</label>
+            <select id="br-type" class="inp"><option>SUMINISTRA</option><option>RECIBE_ORDEN</option><option>INCLUYE</option><option>SE_ENVIA_POR</option><option>ALMACENADO_EN</option><option>UBICADO_EN</option><option>LLEGA_A</option><option>SALE_DE</option><option>GESTIONA</option><option>REQUIERE</option><option>DESTINO</option></select>
+          </div>
+          <div>
+            <label class="lbl">Filter Label</label>
+            <select id="br-label" class="inp"><option>Supplier</option><option>Product</option><option>OrderCompra</option><option>Inventory</option><option>CentroDistribucion</option><option>Transporte</option></select>
+          </div>
+        </div>
+        <label class="lbl">Filter property (e.g. pais)</label>
+        <input id="br-fp" type="text" class="inp" placeholder="e.g. pais" style="margin-bottom:5px"/>
+        <label class="lbl">Filter values (comma-sep, e.g. Guatemala,México)</label>
+        <input id="br-fv" type="text" class="inp" placeholder="e.g. Guatemala,México" style="margin-bottom:5px"/>
+        <label class="lbl">Props to set/update (key=value per line) — para Update/Remove Props</label>
+        <textarea id="br-set" class="inp" rows="2" placeholder="verificado=true&#10;prioridad=ALTA" style="resize:none;font-family:monospace;font-size:12px;margin-bottom:5px"></textarea>
+        <label class="lbl">Props to remove (comma-sep) — para Remove Props</label>
+        <input id="br-rm" type="text" class="inp" placeholder="e.g. nota,descuento" style="margin-bottom:8px"/>
+        <div style="display:flex;gap:5px">
+          <button onclick="bulkRelUpdate()" class="btn btn-dark btn-xs" style="flex:1;justify-content:center">Bulk Update</button>
+          <button onclick="bulkRelRemoveProps()" class="btn btn-ghost btn-xs" style="flex:1;justify-content:center">Remove Props</button>
+          <button onclick="bulkRelDelete()" class="btn btn-danger btn-xs" style="flex:1;justify-content:center">Delete All</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== GRAPH VIEW ========== -->
+  <div id="section-graph" class="section">
+    <div class="page-header">
+      <h1>Graph View</h1>
+      <p>Visualización interactiva del grafo — zoom, pan, click en nodos para ver propiedades</p>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:6px">
+        <label class="lbl" style="margin-bottom:0;white-space:nowrap">Edges limit:</label>
+        <select id="graph-limit" class="inp" style="width:90px;padding:5px 8px">
+          <option value="100">100</option><option value="200" selected>200</option><option value="400">400</option><option value="600">600</option>
+        </select>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <label class="lbl" style="margin-bottom:0;white-space:nowrap">Filter label:</label>
+        <select id="graph-label" class="inp" style="width:160px;padding:5px 8px">
+          <option value="">All labels</option>
+          <option>Supplier</option><option>Product</option><option>OrderCompra</option><option>Inventory</option><option>CentroDistribucion</option><option>Transporte</option>
+        </select>
+      </div>
+      <button onclick="loadGraph()" class="btn btn-dark btn-sm"><span class="material-symbols-outlined" style="font-size:15px">play_arrow</span>Load Graph</button>
+      <button onclick="if(graphNet)graphNet.fit()" class="btn btn-ghost btn-sm"><span class="material-symbols-outlined" style="font-size:15px">fit_screen</span>Fit</button>
+      <button onclick="zoomGraph(1.3)" class="btn btn-ghost btn-sm"><span class="material-symbols-outlined" style="font-size:15px">zoom_in</span></button>
+      <button onclick="zoomGraph(0.77)" class="btn btn-ghost btn-sm"><span class="material-symbols-outlined" style="font-size:15px">zoom_out</span></button>
+      <span id="graph-info" style="font-size:12px;color:#64748b;margin-left:4px"></span>
+    </div>
+
+    <div class="graph-legend" id="graph-legend"></div>
+
+    <div style="display:grid;grid-template-columns:1fr 260px;gap:12px;align-items:start">
+      <div>
+        <div id="graph-container"></div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:10px">
+          <div class="card-title"><span class="material-symbols-outlined" style="font-size:14px">info</span>Node Details</div>
+          <div id="node-panel" class="node-panel"><p style="color:#94a3b8;font-size:12px">Click a node to see its properties</p></div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="font-size:11px">Color Legend</div>
+          <div id="legend-list" style="font-size:12px;display:flex;flex-direction:column;gap:5px"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== CYPHER QUERIES ========== -->
+  <div id="section-queries" class="section">
+    <div class="page-header">
+      <h1>Cypher Queries</h1>
+      <p>6 consultas parametrizables sobre el modelo de cadena de suministros — ejecuta y ve los resultados</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+
+      <div class="card">
+        <div class="card-title"><span style="background:#ede9fe;color:#7c3aed;padding:2px 8px;border-radius:4px;font-size:11px;margin-right:4px">Q1</span>Products by Category</div>
+        <code style="font-size:10.5px;color:#64748b;display:block;margin-bottom:10px;font-family:monospace">MATCH (p:Product) WHERE p.categoria = $cat RETURN p</code>
+        <label class="lbl">Categoría del producto</label>
+        <div style="display:flex;gap:6px;margin-bottom:10px">
+          <select class="inp" id="q1-example" style="width:160px;padding:5px 8px" onchange="document.getElementById('q1-cat').value=this.value">
+            <option value="">— pick category —</option>
+            <option>Bebidas</option><option>Alimentos</option><option>Lácteos</option>
+            <option>Bebidas Energéticas</option><option>Aguas</option><option>Jugos</option>
+            <option>Cerveza</option><option>Vinos</option><option>Gaseosas</option><option>Snacks</option>
+          </select>
+          <input id="q1-cat" type="text" class="inp" placeholder="e.g. Bebidas"/>
+          <button onclick="runQ1()" class="btn btn-dark btn-sm">Run</button>
+        </div>
+        <div id="q1-result" style="overflow-x:auto;max-height:200px"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:4px;font-size:11px;margin-right:4px">Q2</span>Top Suppliers by Rating</div>
+        <code style="font-size:10.5px;color:#64748b;display:block;margin-bottom:10px;font-family:monospace">MATCH (s:Supplier) RETURN s ORDER BY s.rating DESC LIMIT $n</code>
+        <label class="lbl">Límite de resultados</label>
+        <div style="display:flex;gap:6px;margin-bottom:10px">
+          <input id="q2-limit" type="number" value="10" min="1" max="100" class="inp" style="width:80px"/>
+          <button onclick="runQ2()" class="btn btn-dark btn-sm">Run</button>
+        </div>
+        <div id="q2-result" style="overflow-x:auto;max-height:200px"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span style="background:#dcfce7;color:#15803d;padding:2px 8px;border-radius:4px;font-size:11px;margin-right:4px">Q3</span>Pending Orders</div>
+        <code style="font-size:10.5px;color:#64748b;display:block;margin-bottom:10px;font-family:monospace">MATCH (o:OrderCompra) WHERE o.estado='PENDIENTE' RETURN o LIMIT $n</code>
+        <label class="lbl">Límite</label>
+        <div style="display:flex;gap:6px;margin-bottom:10px">
+          <input id="q3-limit" type="number" value="20" min="1" max="200" class="inp" style="width:80px"/>
+          <button onclick="runQ3()" class="btn btn-dark btn-sm">Run</button>
+        </div>
+        <div id="q3-result" style="overflow-x:auto;max-height:200px"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span style="background:#fef9c3;color:#92400e;padding:2px 8px;border-radius:4px;font-size:11px;margin-right:4px">Q4</span>Transport Status</div>
+        <code style="font-size:10.5px;color:#64748b;display:block;margin-bottom:10px;font-family:monospace">MATCH (t:Transporte) RETURN t ORDER BY t.fecha_salida LIMIT $n</code>
+        <label class="lbl">Límite</label>
+        <div style="display:flex;gap:6px;margin-bottom:10px">
+          <input id="q4-limit" type="number" value="20" min="1" max="200" class="inp" style="width:80px"/>
+          <button onclick="runQ4()" class="btn btn-dark btn-sm">Run</button>
+        </div>
+        <div id="q4-result" style="overflow-x:auto;max-height:200px"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span style="background:#fce7f3;color:#9d174d;padding:2px 8px;border-radius:4px;font-size:11px;margin-right:4px">Q5</span>Inventory Status for Product</div>
+        <code style="font-size:10.5px;color:#64748b;display:block;margin-bottom:10px;font-family:monospace">MATCH (p:Product)-[:ALMACENADO_EN]->(i:Inventory) WHERE p.id_producto=$id RETURN i</code>
+        <label class="lbl">Product ID (id_producto)</label>
+        <div style="display:flex;gap:6px;margin-bottom:10px">
+          <input id="q5-id" type="number" class="inp" placeholder="e.g. 1" style="flex:1"/>
+          <button onclick="runQ5()" class="btn btn-dark btn-sm">Run</button>
+        </div>
+        <div id="q5-result" style="overflow-x:auto;max-height:200px"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span style="background:#f0fdf4;color:#166534;padding:2px 8px;border-radius:4px;font-size:11px;margin-right:4px">Q6</span>Aggregation Query</div>
+        <code style="font-size:10.5px;color:#64748b;display:block;margin-bottom:10px;font-family:monospace">MATCH (n:&lt;Label&gt;) RETURN &lt;FUNC&gt;(n.&lt;property&gt;)</code>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px">
+          <div><label class="lbl">Label</label><select id="q6-label" class="inp" style="padding:5px 7px"><option>Supplier</option><option>Product</option><option>OrderCompra</option><option>Inventory</option><option>CentroDistribucion</option><option>Transporte</option></select></div>
+          <div><label class="lbl">Function</label><select id="q6-func" class="inp" style="padding:5px 7px"><option>COUNT</option><option>AVG</option><option>MAX</option><option>MIN</option><option>SUM</option></select></div>
+          <div><label class="lbl">Property</label><input id="q6-prop" type="text" class="inp" style="padding:5px 7px" value="rating"/></div>
+        </div>
+        <button onclick="runQ6()" class="btn btn-dark" style="width:100%;justify-content:center;margin-bottom:8px">Run Aggregation</button>
+        <div id="q6-result"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========== ANALYTICS ========== -->
+  <div id="section-analytics" class="section">
+    <div class="page-header">
+      <h1>Analytics — Data Science</h1>
+      <p>Algoritmos de análisis sobre el grafo de cadena de suministros</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div class="card-title" style="margin-bottom:0"><span class="material-symbols-outlined" style="font-size:16px;color:#dc2626">warning</span>Stockout Detection</div>
+          <button onclick="loadStockouts()" class="btn btn-dark btn-xs">Refresh</button>
+        </div>
+        <p style="font-size:11.5px;color:#64748b;margin-bottom:10px">Productos con menor inventario total acumulado en la red. Stock=0 indica quiebre crítico.</p>
+        <div id="an-stockouts"><div class="empty-state" style="padding:20px"><span class="material-symbols-outlined">bar_chart</span><p>Click Refresh to load</p></div></div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div class="card-title" style="margin-bottom:0"><span class="material-symbols-outlined" style="font-size:16px;color:#d97706">shopping_cart</span>Reorder Suggestions</div>
+          <button onclick="loadReorder()" class="btn btn-dark btn-xs">Refresh</button>
+        </div>
+        <p style="font-size:11.5px;color:#64748b;margin-bottom:10px">Productos con mayor demanda promedio en los últimos 90 días — candidatos a reorden urgente.</p>
+        <div id="an-reorder"><div class="empty-state" style="padding:20px"><span class="material-symbols-outlined">bar_chart</span><p>Click Refresh to load</p></div></div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div class="card-title" style="margin-bottom:0"><span class="material-symbols-outlined" style="font-size:16px;color:#059669">storefront</span>Top Suppliers by Volume</div>
+          <button onclick="loadTopSup()" class="btn btn-dark btn-xs">Refresh</button>
+        </div>
+        <p style="font-size:11.5px;color:#64748b;margin-bottom:10px">Proveedores rankeados por cantidad de productos distintos que suministran.</p>
+        <div id="an-topsup"><div class="empty-state" style="padding:20px"><span class="material-symbols-outlined">bar_chart</span><p>Click Refresh to load</p></div></div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div class="card-title" style="margin-bottom:0"><span class="material-symbols-outlined" style="font-size:16px;color:#2563eb">local_shipping</span>Transport Overview</div>
+          <button onclick="loadTransport()" class="btn btn-dark btn-xs">Refresh</button>
+        </div>
+        <p style="font-size:11.5px;color:#64748b;margin-bottom:10px">Resumen de transportes activos por tipo y estado en la red de distribución.</p>
+        <div id="an-transport"><div class="empty-state" style="padding:20px"><span class="material-symbols-outlined">bar_chart</span><p>Click Refresh to load</p></div></div>
+      </div>
+
+    </div>
+  </div>
+
+  </main>
+</div>
+
+<!-- ========== MODALS ========== -->
+
+<!-- Create Node (1 label) -->
+<div class="modal-bg" id="modal-create">
+  <div class="modal">
+    <div class="modal-hd"><h3>Create Node — 1 Label</h3><button class="close-btn" onclick="closeModal('modal-create')"><span class="material-symbols-outlined">close</span></button></div>
+    <label class="lbl">Label</label>
+    <select id="c-label" class="inp" style="margin-bottom:10px" onchange="buildCreateFields()">
+      <option>Supplier</option><option>Product</option><option>OrderCompra</option><option>Inventory</option><option>CentroDistribucion</option><option>Transporte</option>
+    </select>
+    <div id="c-fields" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px"></div>
+    <div style="display:flex;gap:8px">
+      <button onclick="submitCreate()" class="btn btn-dark" style="flex:1;justify-content:center">Create Node</button>
+      <button onclick="closeModal('modal-create')" class="btn btn-ghost" style="flex:1;justify-content:center">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Multi-label Node -->
+<div class="modal-bg" id="modal-multilabel">
+  <div class="modal">
+    <div class="modal-hd"><h3>Create Node — 2+ Labels</h3><button class="close-btn" onclick="closeModal('modal-multilabel')"><span class="material-symbols-outlined">close</span></button></div>
+    <label class="lbl">Labels (comma-separated, mínimo 2)</label>
+    <input id="ml-labels" type="text" class="inp" placeholder="e.g. Supplier,VIP,Certificado" style="margin-bottom:2px"/>
+    <p class="hint" style="margin-bottom:10px">Ejemplo: <code>Supplier,Premium</code> crea un nodo con ambas etiquetas asignadas simultáneamente.</p>
+    <label class="lbl">Properties — ≥5 required (key=value, one per line)</label>
+    <textarea id="ml-props" class="inp" rows="8" style="resize:vertical;font-family:monospace;font-size:12px;margin-bottom:4px" placeholder="id_proveedor=9999&#10;nombre=ProveeDor Premium&#10;pais=Guatemala&#10;rating=4.8&#10;activo=true&#10;categorias=Bebidas,Lácteos"></textarea>
+    <p class="hint" style="margin-bottom:12px">Mínimo 5 propiedades para cumplir con el criterio de rúbrica.</p>
+    <div style="display:flex;gap:8px">
+      <button onclick="submitMultiLabel()" class="btn btn-dark" style="flex:1;justify-content:center">Create Node</button>
+      <button onclick="closeModal('modal-multilabel')" class="btn btn-ghost" style="flex:1;justify-content:center">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Node -->
+<div class="modal-bg" id="modal-edit">
+  <div class="modal">
+    <div class="modal-hd"><h3>Edit Node</h3><button class="close-btn" onclick="closeModal('modal-edit')"><span class="material-symbols-outlined">close</span></button></div>
+    <input type="hidden" id="ed-label"/><input type="hidden" id="ed-idprop"/><input type="hidden" id="ed-idval"/>
+    <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:8px 12px;margin-bottom:12px;font-size:12.5px;color:#0369a1">
+      Editando: <strong id="ed-desc"></strong>
+    </div>
+    <label class="lbl">Add/Update Properties (key=value, one per line)</label>
+    <textarea id="ed-set" class="inp" rows="4" placeholder="rating=4.9&#10;activo=false&#10;nueva_prop=valor" style="resize:none;font-family:monospace;font-size:12px;margin-bottom:8px"></textarea>
+    <label class="lbl">Remove Properties (comma-separated keys)</label>
+    <input id="ed-rm" type="text" class="inp" placeholder="e.g. nota_interna,campo_obsoleto" style="margin-bottom:12px"/>
+    <div style="display:flex;gap:8px">
+      <button onclick="submitEdit()" class="btn btn-dark" style="flex:1;justify-content:center">Save Changes</button>
+      <button onclick="closeModal('modal-edit')" class="btn btn-ghost" style="flex:1;justify-content:center">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- CSV Import -->
+<div class="modal-bg" id="modal-csv">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-hd"><h3>Import Nodes from CSV</h3><button class="close-btn" onclick="closeModal('modal-csv')"><span class="material-symbols-outlined">close</span></button></div>
+    <label class="lbl">Entity Type (label a asignar a cada fila)</label>
+    <select id="csv-type" class="inp" style="margin-bottom:10px" onchange="showCsvHint()">
+      <option>Supplier</option><option>Product</option><option>OrderCompra</option><option>Inventory</option><option>CentroDistribucion</option><option>Transporte</option>
+    </select>
+    <div id="csv-hint" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:10px 12px;margin-bottom:10px;font-size:11.5px;color:#166534"></div>
+    <label class="lbl">CSV File</label>
+    <input type="file" id="csv-file" accept=".csv" class="inp" style="padding:6px;margin-bottom:4px"/>
+    <p class="hint" style="margin-bottom:12px">Primera fila = encabezados (nombres de propiedades). Valores booleanos: <code>true</code>/<code>false</code>. Fechas: <code>YYYY-MM-DD</code>.</p>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <button onclick="submitCsv()" class="btn btn-dark" style="flex:1;justify-content:center"><span class="material-symbols-outlined" style="font-size:15px">upload</span>Upload & Import</button>
+      <button onclick="closeModal('modal-csv')" class="btn btn-ghost" style="flex:1;justify-content:center">Cancel</button>
+    </div>
+    <div id="csv-result" style="font-size:13px"></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<script>
+// ─── STATE ────────────────────────────────────────────────
+let curLabel = 'Supplier';
+let entData = [];
+let dashData = [];
+let dashTab_ = 'suppliers';
+let graphNet = null;
+
+const ID_MAP = {
+  Supplier:'id_proveedor', Product:'id_producto', OrderCompra:'id_orden',
+  Inventory:'id_inventario', CentroDistribucion:'id_centro', Transporte:'id_transporte'
+};
+
+const FIELDS = {
+  Supplier:[
+    {k:'id_proveedor',l:'ID Proveedor',t:'number',ph:'e.g. 999',req:true},
+    {k:'nombre',l:'Nombre',t:'text',ph:'e.g. Proveedor Guatemala S.A.',req:true},
+    {k:'pais',l:'País',t:'text',ph:'e.g. Guatemala',req:true},
+    {k:'rating',l:'Rating (0–5)',t:'number',ph:'e.g. 4.5',req:true},
+    {k:'activo',l:'Activo',t:'text',ph:'true / false',req:true},
+    {k:'categorias',l:'Categorías',t:'text',ph:'e.g. Bebidas,Lácteos',req:true}
+  ],
+  Product:[
+    {k:'id_producto',l:'ID Producto',t:'number',ph:'e.g. 9999',req:true},
+    {k:'nombre',l:'Nombre',t:'text',ph:'e.g. Agua Purificada 500ml',req:true},
+    {k:'categoria',l:'Categoría',t:'text',ph:'e.g. Bebidas',req:true},
+    {k:'precio',l:'Precio (Q)',t:'number',ph:'e.g. 12.50',req:true},
+    {k:'perecedero',l:'Perecedero',t:'text',ph:'true / false',req:true},
+    {k:'fecha_expiracion',l:'Fecha Expiración',t:'text',ph:'e.g. 2027-12-31',req:true}
+  ],
+  OrderCompra:[
+    {k:'id_orden',l:'ID Orden',t:'number',ph:'e.g. 9999',req:true},
+    {k:'fecha_orden',l:'Fecha Orden',t:'text',ph:'e.g. 2026-05-01',req:true},
+    {k:'estado',l:'Estado',t:'text',ph:'PENDIENTE / ENTREGADO / CANCELADO',req:true},
+    {k:'total',l:'Total (Q)',t:'number',ph:'e.g. 1500.00',req:true},
+    {k:'urgente',l:'Urgente',t:'text',ph:'true / false',req:true},
+    {k:'metodo_pago',l:'Método Pago',t:'text',ph:'CONTADO / CREDITO',req:true}
+  ],
+  Inventory:[
+    {k:'id_inventario',l:'ID Inventario',t:'number',ph:'e.g. 9999',req:true},
+    {k:'cantidad',l:'Cantidad',t:'number',ph:'e.g. 500',req:true},
+    {k:'ubicacion',l:'Ubicación',t:'text',ph:'e.g. Bodega Norte',req:true},
+    {k:'capacidad_max',l:'Cap. Máxima',t:'number',ph:'e.g. 1000',req:true},
+    {k:'temperatura_controlada',l:'Temp. Controlada',t:'text',ph:'true / false',req:true},
+    {k:'fecha_actualizacion',l:'Fecha Actualiz.',t:'text',ph:'e.g. 2026-05-05',req:true}
+  ],
+  CentroDistribucion:[
+    {k:'id_centro',l:'ID Centro',t:'number',ph:'e.g. 99',req:true},
+    {k:'nombre',l:'Nombre',t:'text',ph:'e.g. Centro Norte GT',req:true},
+    {k:'ciudad',l:'Ciudad',t:'text',ph:'e.g. Guatemala',req:true},
+    {k:'capacidad',l:'Capacidad',t:'number',ph:'e.g. 5000',req:true},
+    {k:'activo',l:'Activo',t:'text',ph:'true / false',req:true},
+    {k:'tipo',l:'Tipo',t:'text',ph:'PRINCIPAL / SECUNDARIO',req:true}
+  ],
+  Transporte:[
+    {k:'id_transporte',l:'ID Transporte',t:'number',ph:'e.g. 9999',req:true},
+    {k:'tipo',l:'Tipo',t:'text',ph:'Camión / Tren / Avión / Barco',req:true},
+    {k:'costo',l:'Costo (Q)',t:'number',ph:'e.g. 800.0',req:true},
+    {k:'duracion_dias',l:'Duración (días)',t:'number',ph:'e.g. 3',req:true},
+    {k:'estado',l:'Estado',t:'text',ph:'En Ruta / En Bodega / Entregado',req:true},
+    {k:'fecha_salida',l:'Fecha Salida',t:'text',ph:'e.g. 2026-05-10',req:true}
+  ]
+};
+
+const CSV_HINTS = {
+  Supplier: 'Columnas requeridas: <code>id_proveedor, nombre, pais, rating, activo, categorias</code>',
+  Product: 'Columnas requeridas: <code>id_producto, nombre, categoria, precio, perecedero, fecha_expiracion</code>',
+  OrderCompra: 'Columnas requeridas: <code>id_orden, fecha_orden, estado, total, urgente, metodo_pago</code>',
+  Inventory: 'Columnas requeridas: <code>id_inventario, cantidad, ubicacion, capacidad_max, temperatura_controlada, fecha_actualizacion</code>',
+  CentroDistribucion: 'Columnas requeridas: <code>id_centro, nombre, ciudad, capacidad, activo, tipo</code>',
+  Transporte: 'Columnas requeridas: <code>id_transporte, tipo, costo, duracion_dias, estado, fecha_salida</code>'
+};
+
+const ENTITY_AGG_PROP = {
+  Supplier:'rating', Product:'precio', OrderCompra:'total',
+  Inventory:'cantidad', CentroDistribucion:'capacidad', Transporte:'costo'
+};
+
+const GRAPH_COLORS = {
+  Supplier:'#0b2d34', Product:'#F06B54', OrderCompra:'#f59e0b',
+  Inventory:'#10b981', CentroDistribucion:'#3b82f6', Transporte:'#8b5cf6'
+};
+
+// ─── UTILS ────────────────────────────────────────────────
+async function api(path, opts={}) {
+  const r = await fetch(path, {headers:{'Content-Type':'application/json'}, ...opts});
+  return r.json();
+}
+
+function toast(msg, type='ok') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast ${type} show`;
+  clearTimeout(el._t);
+  el._t = setTimeout(()=>{ el.className='toast'; }, 3800);
+}
+
+function tbl(data, id) {
+  const el = document.getElementById(id);
+  if(!el) return;
+  if(!data||!data.length){ el.innerHTML='<p style="font-size:12px;color:#94a3b8;padding:8px">No results.</p>'; return; }
+  const keys = Object.keys(data[0]);
+  el.innerHTML = `<table class="result-table">
+    <thead><tr>${keys.map(k=>`<th title="${k}">${k}</th>`).join('')}</tr></thead>
+    <tbody>${data.map(r=>`<tr>${keys.map(k=>`<td title="${String(r[k]??'')}">${String(r[k]??'—')}</td>`).join('')}</tr>`).join('')}</tbody>
+  </table>`;
+}
+
+function cv(v) {
+  if(v==='true') return true; if(v==='false') return false;
+  if(!isNaN(v)&&v!=='') return Number(v);
+  return v;
+}
+function parseLines(txt) {
+  const o={};
+  txt.split('\n').forEach(l=>{ const i=l.indexOf('='); if(i>0){ o[l.slice(0,i).trim()]=cv(l.slice(i+1).trim()); }});
+  return o;
+}
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+
+// ─── NAVIGATION ───────────────────────────────────────────
+function go(sec) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(l=>l.classList.remove('active'));
+  document.getElementById('section-'+sec).classList.add('active');
+  document.querySelector(`[onclick="go('${sec}')"]`).classList.add('active');
+  const titles={dashboard:'Dashboard',entities:'Entities',relationships:'Relationships',graph:'Graph View',queries:'Cypher Queries',analytics:'Analytics'};
+  document.getElementById('page-title').textContent = titles[sec]||sec;
+  if(sec==='dashboard') loadDashboard();
+  if(sec==='entities') loadEnt();
+  if(sec==='relationships') loadRelationshipTypes();
+  if(sec==='analytics') { loadStockouts(); loadReorder(); loadTopSup(); loadTransport(); }
+}
+
+// ─── HEALTH ───────────────────────────────────────────────
+async function checkHealth() {
+  try {
+    const d = await api('/api/health');
+    const ok = d.success;
+    document.getElementById('db-badge').innerHTML = ok
+      ? '<span class="dot" style="background:#059669"></span>DB OK'
+      : '<span class="dot" style="background:#dc2626"></span>Error';
+    document.getElementById('db-badge').className = `badge ${ok?'badge-ok':'badge-err'}`;
+    document.getElementById('side-status').innerHTML = ok
+      ? '<span class="dot" style="background:#059669"></span>Connected'
+      : '<span class="dot" style="background:#dc2626"></span>Error';
+  } catch {
+    document.getElementById('db-badge').innerHTML = '<span class="dot" style="background:#dc2626"></span>Offline';
+    document.getElementById('db-badge').className = 'badge badge-err';
+  }
+}
+
+// ─── INIT DB ──────────────────────────────────────────────
+async function initDB() {
+  if(!confirm('Initialize database?\n\nEsto regenerará 5,400+ nodos y ~70,000 relaciones. Tardará ~1 minuto.')) return;
+  const btn = document.getElementById('btn-init');
+  btn.innerHTML = '<span class="spinner"></span> Initializing…';
+  btn.disabled = true;
+  toast('Initializing DB… esto puede tardar ~1 minuto', 'info');
+  try {
+    const d = await api('/api/init', {method:'POST', body:JSON.stringify({clear:true})});
+    if(d.success) { toast('✓ Database initialized successfully!'); await loadDashboard(); }
+    else toast('Error: '+d.error, 'err');
+  } catch(e) { toast('Request failed: '+e.message, 'err'); }
+  btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:15px">refresh</span>Initialize DB';
+  btn.disabled = false;
+}
+
+// ─── DASHBOARD ────────────────────────────────────────────
+async function loadDashboard() {
+  await Promise.all([loadStats(), loadDashTable(dashTab_), loadTopSupDash(), loadStockoutsDash()]);
+}
+
+async function loadStats() {
+  try {
+    const d = await api('/api/stats');
+    if(!d.success) return;
+    const s = d.data;
+    document.getElementById('s-nodes').textContent = (s.total_nodes||0).toLocaleString();
+    document.getElementById('s-rels').textContent  = (s.total_relationships||0).toLocaleString();
+    document.getElementById('s-sup').textContent   = (s.total_suppliers||0).toLocaleString();
+    document.getElementById('s-prod').textContent  = (s.total_products||0).toLocaleString();
+    document.getElementById('s-ord').textContent   = (s.total_orders||0).toLocaleString();
+    document.getElementById('s-ctr').textContent   = (s.total_centers||0).toLocaleString();
+  } catch {}
+}
+
+const DASH_URLS = {suppliers:'/api/suppliers?limit=50',products:'/api/products?limit=50',orders:'/api/orders?limit=50'};
+const ENTITY_LIST_URLS = {
+  Supplier: '/api/suppliers?limit=100',
+  Product: '/api/products?limit=100',
+  OrderCompra: '/api/orders?limit=100',
+  Inventory: '/api/inventories?limit=100',
+  CentroDistribucion: '/api/centers?limit=100',
+  Transporte: '/api/transports?limit=100',
+};
+
+async function loadDashTable(tab) {
+  const tbody = document.getElementById('d-tbody');
+  const thead = document.getElementById('d-thead');
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#94a3b8;font-size:12px">Loading…</td></tr>';
+  try {
+    const d = await api(DASH_URLS[tab]);
+    dashData = d.success ? d.data : [];
+    renderDash(dashData, thead, tbody);
+  } catch { dashData=[]; renderDash([], thead, tbody); }
+}
+
+function renderDash(data, thead, tbody) {
+  if(!data||!data.length){
+    thead.innerHTML=''; tbody.innerHTML='<tr><td colspan="6"><div class="empty-state"><span class="material-symbols-outlined">table_rows</span><p>No data — Initialize DB first</p></div></td></tr>';
+    return;
+  }
+  const keys = Object.keys(data[0]).slice(0,6);
+  thead.innerHTML = `<tr>${keys.map(k=>`<th>${k}</th>`).join('')}</tr>`;
+  tbody.innerHTML = data.map(r=>`<tr>${keys.map(k=>`<td title="${String(r[k]??'')}">${String(r[k]??'—')}</td>`).join('')}</tr>`).join('');
+}
+
+function filterDash(q) {
+  q=q.toLowerCase();
+  const f=dashData.filter(r=>Object.values(r).some(v=>String(v).toLowerCase().includes(q)));
+  renderDash(f, document.getElementById('d-thead'), document.getElementById('d-tbody'));
+}
+
+function dashTab(btn, tab) {
+  document.querySelectorAll('#section-dashboard .tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  dashTab_ = tab;
+  loadDashTable(tab);
+}
+
+async function loadTopSupDash() {
+  try {
+    const d = await api('/api/analytics/top-suppliers?limit=5');
+    const el = document.getElementById('top-sup-chart');
+    if(!d.success||!d.data.length){ el.innerHTML='<p style="font-size:12px;color:#94a3b8">No data.</p>'; return; }
+    const maxV = Math.max(...d.data.map(s=>s.productos_suministrados||0))||1;
+    el.innerHTML = d.data.map(s=>{
+      const v=s.productos_suministrados||0;
+      const pct=Math.round(v/maxV*100);
+      return `<div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:3px">
+          <span style="font-weight:600;color:#374151;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px">${s.nombre||'?'}</span>
+          <span style="color:#64748b;flex-shrink:0;margin-left:4px">${v}</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+      </div>`;
+    }).join('');
+  } catch { document.getElementById('top-sup-chart').innerHTML='<p style="font-size:12px;color:#dc2626">Error.</p>'; }
+}
+
+async function loadStockoutsDash() {
+  try {
+    const d = await api('/api/analytics/stockouts?limit=5');
+    const el = document.getElementById('stockout-list');
+    if(!d.success||!d.data.length){ el.innerHTML='<p style="font-size:12px;color:#94a3b8">No stockout risks detected.</p>'; return; }
+    el.innerHTML = d.data.map(s=>{
+      const nm = s.nombre||'Unknown';
+      const qty = s.inventario_total??'?';
+      const crit = qty===0||qty==='0';
+      return `<div style="display:flex;align-items:center;gap:8px;padding:7px 8px;border:1px solid ${crit?'#fecaca':'#fed7aa'};border-radius:6px;background:${crit?'#fef2f2':'#fff7ed'};margin-bottom:5px">
+        <div style="width:8px;height:8px;border-radius:50%;background:${crit?'#dc2626':'#f59e0b'};flex-shrink:0"></div>
+        <div style="flex:1;min-width:0"><div style="font-size:11.5px;font-weight:600;color:#374151;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${nm}</div>
+        <div style="font-size:10.5px;color:#94a3b8">Stock: ${qty}</div></div>
+      </div>`;
+    }).join('');
+  } catch { document.getElementById('stockout-list').innerHTML='<p style="font-size:12px;color:#dc2626">Error loading.</p>'; }
+}
+
+// ─── ENTITIES ─────────────────────────────────────────────
+async function loadEnt() {
+  document.getElementById('ent-title').textContent = curLabel;
+  const tbody = document.getElementById('e-tbody');
+  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:#94a3b8;font-size:12px">Loading…</td></tr>';
+  const url = ENTITY_LIST_URLS[curLabel] || `/api/nodes/${curLabel}?limit=100`;
+  const d = await api(url).catch(()=>({success:false,data:[]}));
+  entData = d.success ? d.data : [];
+  renderEnt(entData);
+  document.getElementById('ent-count').textContent = entData.length ? `${entData.length} nodes loaded` : '';
+}
+
+function renderEnt(data) {
+  const thead = document.getElementById('e-thead');
+  const tbody = document.getElementById('e-tbody');
+  const idp = ID_MAP[curLabel]||'id';
+  if(!data||!data.length){
+    thead.innerHTML=''; tbody.innerHTML=`<tr><td colspan="8"><div class="empty-state"><span class="material-symbols-outlined">search_off</span><p>No ${curLabel} nodes. Initialize DB or create one.</p></div></td></tr>`;
+    return;
+  }
+  const keys = Object.keys(data[0]);
+  thead.innerHTML = `<tr>${keys.map(k=>`<th>${k}</th>`).join('')}<th>Actions</th></tr>`;
+  tbody.innerHTML = data.map(r=>{
+    const iv = r[idp];
+    const hasId = iv !== undefined && iv !== null;
+    const actions = hasId
+      ? `<button onclick="openEdit('${curLabel}','${idp}','${iv}')" class="btn btn-ghost btn-xs" style="margin-right:3px">Edit</button>
+         <button onclick="delNode('${curLabel}','${idp}','${iv}')" class="btn btn-danger btn-xs">Del</button>`
+      : `<span style="font-size:10px;color:#94a3b8;font-style:italic">no ID</span>`;
+    return `<tr style="${hasId?'':'opacity:.5'}">${keys.map(k=>`<td title="${String(r[k]??'')}">${String(r[k]??'—')}</td>`).join('')}
+      <td style="white-space:nowrap">${actions}</td></tr>`;
+  }).join('');
+}
+
+function filterEnt(q) {
+  q=q.toLowerCase();
+  renderEnt(entData.filter(r=>Object.values(r).some(v=>String(v).toLowerCase().includes(q))));
+}
+
+function entTab(btn, label) {
+  document.querySelectorAll('#section-entities .tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  curLabel = label;
+  document.getElementById('ent-filter').value='';
+  // Update aggregation default property to something meaningful for this entity
+  document.getElementById('agg-prop').value = ENTITY_AGG_PROP[label] || 'id';
+  document.getElementById('agg-result').innerHTML = '';
+  loadEnt();
+}
+
+// ─── CREATE NODE ──────────────────────────────────────────
+function openCreateModal(){
+  document.getElementById('c-label').value = curLabel;
+  buildCreateFields();
+  openModal('modal-create');
+}
+
+function buildCreateFields() {
+  const label = document.getElementById('c-label').value;
+  const flds = FIELDS[label]||[];
+  document.getElementById('c-fields').innerHTML = flds.map(f=>
+    `<div><label class="lbl">${f.l}${f.req?' *':''}</label>
+     <input type="${f.t}" data-key="${f.k}" placeholder="${f.ph||''}" class="inp" style="padding:6px 9px"/></div>`
+  ).join('');
+}
+
+async function submitCreate() {
+  const label = document.getElementById('c-label').value;
+  const props={};
+  let ok=true;
+  document.querySelectorAll('#c-fields input').forEach(inp=>{
+    const v=inp.value.trim();
+    if(!v && inp.closest('label')?.textContent.includes('*')) { ok=false; inp.style.borderColor='#dc2626'; return; }
+    inp.style.borderColor='';
+    if(v) props[inp.dataset.key]=cv(v);
+  });
+  if(!ok){ toast('Fill all required fields (marked *)','err'); return; }
+  const d=await api('/api/nodes',{method:'POST',body:JSON.stringify({labels:[label],properties:props})}).catch(()=>({success:false,error:'Network error'}));
+  if(d.success){ toast(`✓ ${label} created (ID: ${props[ID_MAP[label]]||'?'})`); closeModal('modal-create'); if(curLabel===label) loadEnt(); }
+  else toast('Error: '+d.error,'err');
+}
+
+async function submitMultiLabel() {
+  const lblRaw = document.getElementById('ml-labels').value.trim();
+  const propsRaw = document.getElementById('ml-props').value.trim();
+  const labels = lblRaw.split(',').map(s=>s.trim()).filter(Boolean);
+  if(labels.length<2){ toast('Enter at least 2 labels separated by commas','err'); return; }
+  const props = parseLines(propsRaw);
+  if(Object.keys(props).length<5){ toast('Enter at least 5 properties','err'); return; }
+  const d=await api('/api/nodes',{method:'POST',body:JSON.stringify({labels,properties:props})}).catch(()=>({success:false,error:'Network error'}));
+  if(d.success){ toast(`✓ Node [${labels.join(':')}] created!`); closeModal('modal-multilabel'); loadEnt(); }
+  else toast('Error: '+d.error,'err');
+}
+
+// ─── EDIT/DELETE NODE ─────────────────────────────────────
+function openEdit(label, idProp, idVal) {
+  document.getElementById('ed-label').value=label;
+  document.getElementById('ed-idprop').value=idProp;
+  document.getElementById('ed-idval').value=idVal;
+  document.getElementById('ed-desc').textContent=`${label} · ${idProp}=${idVal}`;
+  document.getElementById('ed-set').value='';
+  document.getElementById('ed-rm').value='';
+  openModal('modal-edit');
+}
+
+async function submitEdit() {
+  const label=document.getElementById('ed-label').value;
+  const idProp=document.getElementById('ed-idprop').value;
+  const idVal=document.getElementById('ed-idval').value;
+  const setRaw=document.getElementById('ed-set').value.trim();
+  const rmRaw=document.getElementById('ed-rm').value.trim();
+  if(!setRaw&&!rmRaw){ toast('Nothing to do — enter properties to update or remove','err'); return; }
+  if(setRaw){
+    const body={id_prop:idProp, ...parseLines(setRaw)};
+    const d=await api(`/api/nodes/${label}/${idVal}`,{method:'PATCH',body:JSON.stringify(body)}).catch(()=>({success:false,error:'Network error'}));
+    if(!d.success){ toast('Update error: '+d.error,'err'); return; }
+  }
+  if(rmRaw){
+    const pn=rmRaw.split(',').map(s=>s.trim()).filter(Boolean);
+    const d=await api(`/api/nodes/${label}/${idVal}/remove-properties`,{method:'POST',body:JSON.stringify({id_prop:idProp,property_names:pn})}).catch(()=>({success:false,error:'Network error'}));
+    if(!d.success){ toast('Remove error: '+d.error,'err'); return; }
+  }
+  toast('✓ Node updated'); closeModal('modal-edit'); loadEnt();
+}
+
+async function delNode(label, idProp, idVal) {
+  if(!confirm(`Delete ${label} where ${idProp}=${idVal}?\n\nThis also removes all its relationships.`)) return;
+  const d=await api(`/api/nodes/${label}/${idVal}?id_prop=${idProp}`,{method:'DELETE'}).catch(()=>({success:false}));
+  if(d.success){ toast(`✓ ${label} [${idVal}] deleted`); loadEnt(); }
+  else toast('Error deleting node','err');
+}
+
+// ─── SINGLE NODE PROP OPERATIONS ─────────────────────────
+async function updateSingleNodeProps() {
+  const idVal=document.getElementById('sp-id').value.trim();
+  const propsRaw=document.getElementById('sp-props').value.trim();
+  if(!idVal||!propsRaw){ toast('Enter an ID and at least one property','err'); return; }
+  const body={id_prop:ID_MAP[curLabel], ...parseLines(propsRaw)};
+  const d=await api(`/api/nodes/${curLabel}/${idVal}`,{method:'PATCH',body:JSON.stringify(body)}).catch(()=>({success:false,error:'Network error'}));
+  if(d.success){ toast(`✓ Properties updated on ${curLabel} [${idVal}]`); loadEnt(); }
+  else toast('Error: '+d.error,'err');
+}
+
+async function removeSingleNodeProps() {
+  const idVal=document.getElementById('rsp-id').value.trim();
+  const propsRaw=document.getElementById('rsp-props').value.trim();
+  if(!idVal||!propsRaw){ toast('Enter an ID and properties to remove','err'); return; }
+  const pn=propsRaw.split(',').map(s=>s.trim()).filter(Boolean);
+  const d=await api(`/api/nodes/${curLabel}/${idVal}/remove-properties`,{method:'POST',body:JSON.stringify({id_prop:ID_MAP[curLabel],property_names:pn})}).catch(()=>({success:false,error:'Network error'}));
+  if(d.success){ toast(`✓ Removed ${pn.length} propert${pn.length===1?'y':'ies'} from ${curLabel} [${idVal}]`); loadEnt(); }
+  else toast('Error: '+d.error,'err');
+}
+
+// ─── BULK NODE OPERATIONS ─────────────────────────────────
+async function bulkUpdate() {
+  const fp=document.getElementById('bu-fp').value.trim();
+  const fv=document.getElementById('bu-fv').value.trim();
+  const pk=document.getElementById('bu-pk').value.trim();
+  const pv=document.getElementById('bu-pv').value.trim();
+  if(!fp||!fv||!pk){ toast('Fill all Bulk Update fields','err'); return; }
+  const fvals=fv.split(',').map(s=>cv(s.trim())).filter(v=>v!=='');
+  const d=await api(`/api/nodes/${curLabel}/bulk/update`,{method:'POST',body:JSON.stringify({filter_prop:fp,filter_values:fvals,properties:{[pk]:cv(pv)}})}).catch(()=>({success:false,error:'Network error'}));
+  if(d.success){ toast(`✓ Updated ${d.updated} ${curLabel} nodes`); loadEnt(); }
+  else toast('Error: '+d.error,'err');
+}
+
+async function bulkRemoveProps() {
+  const fp=document.getElementById('brp-fp').value.trim();
+  const fv=document.getElementById('brp-fv').value.trim();
+  const props=document.getElementById('brp-props').value.trim();
+  if(!fp||!fv||!props){ toast('Fill all Bulk Remove Properties fields','err'); return; }
+  const fvals=fv.split(',').map(s=>cv(s.trim())).filter(v=>v!=='');
+  const pn=props.split(',').map(s=>s.trim()).filter(Boolean);
+  const d=await api(`/api/nodes/${curLabel}/bulk/remove-properties`,{method:'POST',body:JSON.stringify({filter_prop:fp,filter_values:fvals,property_names:pn})}).catch(()=>({success:false,error:'Network error'}));
+  if(d.success){ toast(`✓ Removed props from ${d.updated} ${curLabel} nodes`); loadEnt(); }
+  else toast('Error: '+d.error,'err');
+}
+
+async function bulkDelete() {
+  const fp=document.getElementById('bd-fp').value.trim();
+  const fv=document.getElementById('bd-fv').value.trim();
+  if(!fp||!fv){ toast('Fill filter property and values','err'); return; }
+  const fvals=fv.split(',').map(s=>cv(s.trim())).filter(v=>v!=='');
+  if(!confirm(`Delete all ${curLabel} where ${fp} IN [${fvals.join(',')}]?\n\nThis cannot be undone.`)) return;
+  const d=await api(`/api/nodes/${curLabel}/bulk/delete`,{method:'POST',body:JSON.stringify({filter_prop:fp,filter_values:fvals})}).catch(()=>({success:false,error:'Network error'}));
+  if(d.success){ toast(`✓ Deleted ${d.deleted} ${curLabel} nodes`); loadEnt(); }
+  else toast('Error: '+d.error,'err');
+}
+
+async function runAgg() {
+  const func=document.getElementById('agg-func').value;
+  const prop=document.getElementById('agg-prop').value.trim();
+  if(!prop){ toast('Enter a property name','err'); return; }
+  const d=await api(`/api/nodes/${curLabel}/aggregations?func=${func}&prop=${prop}`).catch(()=>({success:false}));
+  const el=document.getElementById('agg-result');
+  if(d.success){
+    el.innerHTML=`<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:8px 12px;margin-top:4px">
+      <span style="font-size:10px;color:#94a3b8;text-transform:uppercase;font-weight:600;letter-spacing:.05em">${func}(${curLabel}.${prop})</span>
+      <div style="font-size:20px;font-weight:700;color:#059669;font-family:'Sora'">${d.data.result??'null'}</div>
+    </div>`;
+  } else el.innerHTML=`<span style="color:#dc2626;font-size:12px">${d.error||'Error'}</span>`;
+}
+
+// ─── RELATIONSHIPS ────────────────────────────────────────
+function getRelBody(px) {
+  return {
+    from_label: document.getElementById(`${px}-fl`).value,
+    from_id: cv(document.getElementById(`${px}-fi`).value),
+    to_label: document.getElementById(`${px}-tl`).value,
+    to_id: cv(document.getElementById(`${px}-ti`).value),
+    rel_type: document.getElementById(`${px}-type`).value,
+  };
+}
+
+async function createRel() {
+  const body=getRelBody('cr');
+  const propsRaw=document.getElementById('cr-props').value.trim();
+  body.properties=parseLines(propsRaw);
+  if(Object.keys(body.properties).length<3){ toast('Add at least 3 properties (one per line: key=value)','err'); return; }
+  const d=await api('/api/relationships',{method:'POST',body:JSON.stringify(body)}).catch(()=>({success:false,error:'Network error'}));
+  if(d.success) toast(`✓ Relationship ${body.rel_type} created`);
+  else toast('Error: '+d.error,'err');
+}
+
+async function updateRelProps() {
+  const body=getRelBody('mr');
+  const raw=document.getElementById('mr-set').value.trim();
+  body.properties=parseLines(raw);
+  if(!Object.keys(body.properties).length){ toast('Enter properties to update','err'); return; }
+  const d=await api('/api/relationships',{method:'PATCH',body:JSON.stringify(body)}).catch(()=>({success:false,error:'Network error'}));
+  if(d.success) toast('✓ Relationship properties updated');
+  else toast('Error: '+d.error,'err');
+}
+
+async function removeRelProps() {
+  const body=getRelBody('mr');
+  const raw=document.getElementById('mr-rm').value.trim();
+  body.property_names=raw.split(',').map(s=>s.trim()).filter(Boolean);
+  if(!body.property_names.length){ toast('Enter property names to remove','err'); return; }
+  const d=await api('/api/relationships/remove-properties',{method:'POST',body:JSON.stringify(body)}).catch(()=>({success:false,error:'Network error'}));
+  if(d.success) toast(`✓ Removed ${body.property_names.length} propert${body.property_names.length===1?'y':'ies'} from relationship`);
+  else toast('Error: '+d.error,'err');
+}
+
+async function deleteSingleRel() {
+  const body=getRelBody('dr');
+  if(!confirm(`Delete ${body.rel_type} from ${body.from_label}[${body.from_id}] → ${body.to_label}[${body.to_id}]?`)) return;
+  const d=await api('/api/relationships',{method:'DELETE',body:JSON.stringify(body)}).catch(()=>({success:false,error:'Network error'}));
+  if(d.success) toast('✓ Relationship deleted');
+  else toast('Error: '+d.error,'err');
+}
+
+function getBulkRelBody() {
+  const fp=document.getElementById('br-fp').value.trim();
+  const fv=document.getElementById('br-fv').value.trim();
+  return {
+    rel_type: document.getElementById('br-type').value,
+    filter_label: document.getElementById('br-label').value,
+    filter_prop: fp,
+    filter_values: fv.split(',').map(s=>cv(s.trim())).filter(v=>v!==''),
+  };
+}
+
+async function bulkRelUpdate() {
+  const body=getBulkRelBody();
+  body.properties=parseLines(document.getElementById('br-set').value.trim());
+  if(!body.filter_prop||!body.filter_values.length||!Object.keys(body.properties).length){ toast('Fill all Bulk Update fields','err'); return; }
+  const d=await api('/api/relationships/bulk/update',{method:'POST',body:JSON.stringify(body)}).catch(()=>({success:false,error:'Network error'}));
+  if(d.success) toast(`✓ Updated ${d.updated} relationships`);
+  else toast('Error: '+d.error,'err');
+}
+
+async function bulkRelRemoveProps() {
+  const body=getBulkRelBody();
+  body.property_names=document.getElementById('br-rm').value.split(',').map(s=>s.trim()).filter(Boolean);
+  if(!body.filter_prop||!body.filter_values.length||!body.property_names.length){ toast('Fill filter and properties to remove','err'); return; }
+  const d=await api('/api/relationships/bulk/remove-properties',{method:'POST',body:JSON.stringify(body)}).catch(()=>({success:false,error:'Network error'}));
+  if(d.success) toast(`✓ Removed props from ${d.updated} relationships`);
+  else toast('Error: '+d.error,'err');
+}
+
+async function bulkRelDelete() {
+  const body=getBulkRelBody();
+  if(!body.filter_prop||!body.filter_values.length){ toast('Fill filter fields','err'); return; }
+  if(!confirm(`Delete all ${body.rel_type} relationships from ${body.filter_label} where ${body.filter_prop} IN [${body.filter_values}]?`)) return;
+  const d=await api('/api/relationships/bulk/delete',{method:'POST',body:JSON.stringify(body)}).catch(()=>({success:false,error:'Network error'}));
+  if(d.success) toast(`✓ Deleted ${d.deleted} relationships`);
+  else toast('Error: '+d.error,'err');
+}
+
+// ─── GRAPH VIEW ───────────────────────────────────────────
+async function loadGraph() {
+  const infoEl=document.getElementById('graph-info');
+  infoEl.textContent='Loading…';
+  const limit=document.getElementById('graph-limit').value;
+  const label=document.getElementById('graph-label').value;
+  const url=label?`/api/graph-sample?limit=${limit}&label=${label}`:`/api/graph-sample?limit=${limit}`;
+  try {
+    const d=await api(url);
+    if(!d.success){ toast('Graph error: '+d.error,'err'); infoEl.textContent=''; return; }
+    const {nodes, edges}=d.data;
+    renderGraph(nodes, edges);
+    infoEl.textContent=`${nodes.length} nodes · ${edges.length} edges`;
+  } catch(e){ toast('Failed to load graph: '+e.message,'err'); infoEl.textContent=''; }
+}
+
+function renderGraph(nodes, edges) {
+  // Normalize group to the first known label so colors are always correct
+  const styledNodes = nodes.map(n=>{
+    const group = KNOWN_LABELS.has(n.group) ? n.group : 'Unknown';
+    const bg = GRAPH_COLORS[group] || '#64748b';
+    return {
+      ...n,
+      group,
+      color:{ background: bg, border: '#0b2d34',
+              highlight:{ background: '#F06B54', border: '#0b2d34' } },
+      font:{ color:'#fff', size:10 },
+      borderWidth:1.5,
+      size:14,
+    };
+  });
+
+  const container=document.getElementById('graph-container');
+  const data={ nodes: new vis.DataSet(styledNodes), edges: new vis.DataSet(edges) };
+  const options={
+    physics:{ enabled:true, solver:'forceAtlas2Based',
+              forceAtlas2Based:{ gravitationalConstant:-40, centralGravity:0.005, springLength:120, springConstant:0.04 },
+              maxVelocity:40, stabilization:{ iterations:120 } },
+    nodes:{ shape:'dot', size:14, font:{ size:10, color:'#fff' }, borderWidth:1.5 },
+    edges:{ arrows:{to:{enabled:true,scaleFactor:0.6}}, smooth:{type:'continuous'}, font:{size:8,align:'middle'}, color:{color:'#94a3b8'} },
+    interaction:{ hover:true, zoomView:true, tooltipDelay:200 },
+  };
+  if(graphNet) graphNet.destroy();
+  graphNet = new vis.Network(container, data, options);
+
+  graphNet.on('click', params=>{
+    if(!params.nodes.length){ document.getElementById('node-panel').innerHTML='<p style="color:#94a3b8;font-size:12px">Click a node to see its properties</p>'; return; }
+    const nId=params.nodes[0];
+    const node=styledNodes.find(n=>n.id===nId);
+    if(node){
+      document.getElementById('node-panel').innerHTML=`
+        <div style="display:inline-block;background:${GRAPH_COLORS[node.group]||'#64748b'};color:#fff;padding:2px 8px;border-radius:99px;font-size:10.5px;font-weight:700;font-family:'Sora';margin-bottom:8px">${node.group}</div>
+        <div style="font-size:11.5px;line-height:1.8">${(node.title||'').replace(/<br\/>/g,'\n').replace(/<[^>]*>/g,'').split('\n').filter(Boolean).map(l=>`<div style="border-bottom:1px solid #f1f5f9;padding:2px 0">${l}</div>`).join('')}</div>
+      `;
+    }
+  });
+
+  // Build legend
+  const used=[...new Set(nodes.map(n=>n.group))];
+  document.getElementById('legend-list').innerHTML = used.map(g=>
+    `<div style="display:flex;align-items:center;gap:7px"><div style="width:12px;height:12px;border-radius:50%;background:${GRAPH_COLORS[g]||'#64748b'};flex-shrink:0"></div><span>${g}</span></div>`
+  ).join('');
+  document.getElementById('graph-legend').innerHTML = used.map(g=>
+    `<div class="legend-item"><div class="legend-dot" style="background:${GRAPH_COLORS[g]||'#64748b'}"></div>${g}</div>`
+  ).join('');
+}
+
+function zoomGraph(factor) {
+  if(!graphNet) return;
+  graphNet.moveTo({ scale: graphNet.getScale()*factor });
+}
+
+// ─── QUERIES ──────────────────────────────────────────────
+async function runQ1() {
+  const cat=document.getElementById('q1-cat').value.trim();
+  if(!cat){ toast('Enter a category','err'); return; }
+  const d=await api(`/api/queries/products-by-category/${encodeURIComponent(cat)}`).catch(()=>({success:false}));
+  tbl(d.success?d.data:[], 'q1-result');
+  if(!d.success) toast('Error: '+(d.error||'unknown'),'err');
+  else toast(`Q1: ${d.data.length} products in "${cat}"`);
+}
+async function runQ2() {
+  const l=document.getElementById('q2-limit').value||10;
+  const d=await api(`/api/queries/top-suppliers?limit=${l}`).catch(e=>({success:false,error:e.message}));
+  tbl(d.success?d.data:[], 'q2-result');
+  if(d.success) toast(`Q2: ${d.data.length} supplier${d.data.length===1?'':'s'} returned`);
+  else toast('Q2 error: '+(d.error||'unknown'),'err');
+}
+async function runQ3() {
+  const l=document.getElementById('q3-limit').value||20;
+  const d=await api(`/api/queries/pending-orders?limit=${l}`).catch(e=>({success:false,error:e.message}));
+  tbl(d.success?d.data:[], 'q3-result');
+  if(d.success) toast(`Q3: ${d.data.length} pending order${d.data.length===1?'':'s'}`);
+  else toast('Q3 error: '+(d.error||'unknown'),'err');
+}
+async function runQ4() {
+  const l=document.getElementById('q4-limit').value||20;
+  const d=await api(`/api/queries/transport-status?limit=${l}`).catch(e=>({success:false,error:e.message}));
+  tbl(d.success?d.data:[], 'q4-result');
+  if(d.success) toast(`Q4: ${d.data.length} transport${d.data.length===1?'':'s'}`);
+  else toast('Q4 error: '+(d.error||'unknown'),'err');
+}
+async function runQ5() {
+  const id=document.getElementById('q5-id').value.trim();
+  if(!id){ toast('Enter a product ID','err'); return; }
+  const d=await api(`/api/queries/inventory-for-product/${id}`).catch(()=>({success:false}));
+  tbl(d.success?d.data:[], 'q5-result');
+  if(d.success) toast(`Q5: ${d.data.length} inventory records for product ${id}`);
+}
+async function runQ6() {
+  const label=document.getElementById('q6-label').value;
+  const func=document.getElementById('q6-func').value;
+  const prop=document.getElementById('q6-prop').value.trim();
+  if(!prop){ toast('Enter a property','err'); return; }
+  const d=await api(`/api/nodes/${label}/aggregations?func=${func}&prop=${prop}`).catch(()=>({success:false}));
+  const el=document.getElementById('q6-result');
+  if(d.success){
+    el.innerHTML=`<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px 16px">
+      <div style="font-size:10px;text-transform:uppercase;font-weight:700;color:#94a3b8;letter-spacing:.08em;margin-bottom:4px">${func}(${label}.${prop})</div>
+      <div style="font-size:28px;font-weight:700;color:#059669;font-family:'Sora'">${d.data.result??'null'}</div>
+    </div>`;
+    toast(`Q6 result: ${d.data.result}`);
+  } else el.innerHTML=`<p style="color:#dc2626;font-size:12px">${d.error||'Error'}</p>`;
+}
+
+// ─── ANALYTICS ────────────────────────────────────────────
+async function loadStockouts() {
+  const d=await api('/api/analytics/stockouts?limit=10').catch(()=>({success:false}));
+  tbl(d.success?d.data:[], 'an-stockouts');
+}
+async function loadReorder() {
+  const d=await api('/api/analytics/reorder?limit=10').catch(()=>({success:false}));
+  tbl(d.success?d.data:[], 'an-reorder');
+}
+async function loadTopSup() {
+  const d=await api('/api/analytics/top-suppliers?limit=10').catch(()=>({success:false}));
+  tbl(d.success?d.data:[], 'an-topsup');
+}
+async function loadTransport() {
+  const d=await api('/api/analytics/transport-overview').catch(()=>({success:false}));
+  tbl(d.success?d.data:[], 'an-transport');
+}
+
+// ─── CSV IMPORT ───────────────────────────────────────────
+function showCsvHint() {
+  const t=document.getElementById('csv-type').value;
+  document.getElementById('csv-hint').innerHTML = CSV_HINTS[t]||'';
+}
+
+async function submitCsv() {
+  const type=document.getElementById('csv-type').value;
+  const fileInput=document.getElementById('csv-file');
+  if(!fileInput.files.length){ toast('Select a CSV file first','err'); return; }
+
+  // Validate CSV columns match entity type
+  const file = fileInput.files[0];
+  const firstLine = await new Promise(res=>{ const r=new FileReader(); r.onload=e=>res(e.target.result.split('\n')[0]); r.readAsText(file); });
+  const cols = firstLine.split(',').map(c=>c.trim().replace(/\r/g,'').replace(/^"|"$/g,''));
+  const required = ENTITY_REQUIRED_COLS[type] || [];
+  const missing = required.filter(c=>!cols.includes(c));
+  if(missing.length > 0) {
+    const proceed = confirm(`⚠️ Warning: the CSV is missing these expected columns for ${type}:\n${missing.join(', ')}\n\nProceed anyway?`);
+    if(!proceed) return;
+  }
+
+  const form=new FormData();
+  form.append('entity_type', type);
+  form.append('file', fileInput.files[0]);
+  const result=document.getElementById('csv-result');
+  result.innerHTML='<p style="color:#64748b;font-size:12px">Importing…</p>';
+  try {
+    const r=await fetch('/api/import/csv',{method:'POST',body:form});
+    const d=await r.json();
+    if(d.success){
+      result.innerHTML=`<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:10px 12px;font-size:12.5px">
+        <strong style="color:#059669">✓ Import complete</strong><br/>
+        Created: <strong>${d.created}</strong> ${type} nodes
+        ${d.errors.length?'<br/><span style="color:#dc2626">Errors (first 5):</span><ul style="margin:4px 0 0 14px">'+d.errors.map(e=>`<li>${e}</li>`).join('')+'</ul>':''}
+      </div>`;
+      toast(`✓ Imported ${d.created} ${type} nodes`);
+      if(curLabel===type) loadEnt();
+    } else {
+      result.innerHTML=`<p style="color:#dc2626;font-size:12px">Error: ${d.error}</p>`;
+      toast('Import failed: '+d.error,'err');
+    }
+  } catch(e){ result.innerHTML=`<p style="color:#dc2626;font-size:12px">Network error</p>`; toast('Network error','err'); }
+}
+
+// ─── RELATIONSHIP TYPES (dynamic) ────────────────────────
+const DEFAULT_REL_TYPES = ['SUMINISTRA','RECIBE_ORDEN','INCLUYE','SE_ENVIA_POR','ALMACENADO_EN',
+  'UBICADO_EN','LLEGA_A','SALE_DE','GESTIONA','REQUIERE','DESTINO'];
+
+async function loadRelationshipTypes() {
+  try {
+    const d = await api('/api/relationship-types');
+    const types = (d.success && d.data.length) ? d.data : DEFAULT_REL_TYPES;
+    const opts = types.map(t=>`<option value="${t}">${t}</option>`).join('');
+    // Populate all rel-type selects
+    ['cr-type','mr-type','dr-type','br-type'].forEach(id=>{
+      const el = document.getElementById(id);
+      if(el){ el.innerHTML = opts; }
+    });
+  } catch {}
+}
+
+// ─── GRAPH: fix unknown labels ────────────────────────────
+const KNOWN_LABELS = new Set(Object.keys(GRAPH_COLORS));
+
+// ─── CSV ENTITY VALIDATION ───────────────────────────────
+const ENTITY_REQUIRED_COLS = {
+  Supplier: ['id_proveedor','nombre','pais','rating','activo','categorias'],
+  Product: ['id_producto','nombre','categoria','precio','perecedero','fecha_expiracion'],
+  OrderCompra: ['id_orden','fecha_orden','estado','total','urgente','metodo_pago'],
+  Inventory: ['id_inventario','cantidad','ubicacion','capacidad_max','temperatura_controlada','fecha_actualizacion'],
+  CentroDistribucion: ['id_centro','nombre','ciudad','capacidad','activo','tipo'],
+  Transporte: ['id_transporte','tipo','costo','duracion_dias','estado','fecha_salida'],
+};
+
+// ─── INIT ─────────────────────────────────────────────────
+showCsvHint();
+buildCreateFields();
+checkHealth();
+loadDashboard();
+loadRelationshipTypes();
+</script>
+</body>
+</html>

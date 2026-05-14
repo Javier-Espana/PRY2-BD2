@@ -130,7 +130,8 @@ class DataGenerator:
                     "id_proveedor": s["id_proveedor"],
                     "id_producto": p["id_producto"],
                     "fecha": DataGenerator.rand_date(365),
-                    "costo": round(random.uniform(0.1, p["precio"] * 0.8), 2)
+                    "costo": round(random.uniform(0.1, p["precio"] * 0.8), 2),
+                    "estado": random.choice(["Activo", "Inactivo", "Suspendido"])
                 })
 
         # INCLUDES: orders include 1-10 products

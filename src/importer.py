@@ -37,8 +37,8 @@ class DataImporter:
                 nombre: row.nombre,
                 pais: row.pais,
                 rating: CASE WHEN row.rating IS NULL OR row.rating = '' THEN NULL ELSE toFloat(row.rating) END,
-                activo: row.activo,
-                categorias: row.categorias
+                activo: row.activo = 'true',
+                categorias: CASE WHEN row.categorias = '' THEN [] ELSE split(row.categorias, '|') END
             })
             RETURN count(*) AS count
             """
@@ -60,8 +60,8 @@ class DataImporter:
                 nombre: row.nombre,
                 categoria: row.categoria,
                 precio: CASE WHEN row.precio IS NULL OR row.precio = '' THEN NULL ELSE toFloat(row.precio) END,
-                perecedero: row.perecedero,
-                fecha_expiracion: CASE WHEN row.fecha_expiracion IS NULL OR row.fecha_expiracion = '' THEN NULL ELSE row.fecha_expiracion END
+                perecedero: row.perecedero = 'true',
+                fecha_expiracion: CASE WHEN row.fecha_expiracion IS NULL OR row.fecha_expiracion = '' THEN NULL ELSE date(row.fecha_expiracion) END
             })
             RETURN count(*) AS count
             """
@@ -83,7 +83,7 @@ class DataImporter:
                 nombre: row.nombre,
                 ciudad: row.ciudad,
                 capacidad: CASE WHEN row.capacidad IS NULL OR row.capacidad = '' THEN NULL ELSE toInteger(row.capacidad) END,
-                activo: row.activo,
+                activo: row.activo = 'true',
                 tipo: row.tipo
             })
             RETURN count(*) AS count
@@ -106,8 +106,8 @@ class DataImporter:
                 cantidad: CASE WHEN row.cantidad IS NULL OR row.cantidad = '' THEN NULL ELSE toInteger(row.cantidad) END,
                 ubicacion: row.ubicacion,
                 capacidad_max: CASE WHEN row.capacidad_max IS NULL OR row.capacidad_max = '' THEN NULL ELSE toInteger(row.capacidad_max) END,
-                temperatura_controlada: row.temperatura_controlada,
-                fecha_actualizacion: row.fecha_actualizacion
+                temperatura_controlada: row.temperatura_controlada = 'true',
+                fecha_actualizacion: CASE WHEN row.fecha_actualizacion = '' THEN NULL ELSE date(row.fecha_actualizacion) END
             })
             RETURN count(*) AS count
             """
@@ -130,7 +130,7 @@ class DataImporter:
                 costo: CASE WHEN row.costo IS NULL OR row.costo = '' THEN NULL ELSE toFloat(row.costo) END,
                 duracion_dias: CASE WHEN row.duracion_dias IS NULL OR row.duracion_dias = '' THEN NULL ELSE toInteger(row.duracion_dias) END,
                 estado: row.estado,
-                fecha_salida: row.fecha_salida
+                fecha_salida: date(row.fecha_salida)
             })
             RETURN count(*) AS count
             """
@@ -149,10 +149,10 @@ class DataImporter:
             UNWIND $rows AS row
             CREATE (o:OrderCompra {
                 id_orden: toInteger(row.id_orden),
-                fecha_orden: row.fecha_orden,
+                fecha_orden: date(row.fecha_orden),
                 estado: row.estado,
                 total: CASE WHEN row.total IS NULL OR row.total = '' THEN NULL ELSE toFloat(row.total) END,
-                urgente: row.urgente,
+                urgente: row.urgente = 'true',
                 metodo_pago: row.metodo_pago
             })
             RETURN count(*) AS count
@@ -172,7 +172,7 @@ class DataImporter:
             UNWIND $rows AS row
             MATCH (s:Supplier {id_proveedor: toInteger(row.id_proveedor)})
             MATCH (p:Product {id_producto: toInteger(row.id_producto)})
-            CREATE (s)-[:SUMINISTRA {fecha: CASE WHEN row.fecha = '' THEN NULL ELSE row.fecha END, costo: CASE WHEN row.costo = '' OR row.costo IS NULL THEN NULL ELSE toFloat(row.costo) END}]->(p)
+            CREATE (s)-[:SUMINISTRA {fecha: CASE WHEN row.fecha = '' THEN NULL ELSE date(row.fecha) END, costo: CASE WHEN row.costo = '' OR row.costo IS NULL THEN NULL ELSE toFloat(row.costo) END, estado: row.estado}]->(p)
             RETURN count(*) AS count
             """
             result = tx.run(query, rows=rows)
@@ -242,10 +242,10 @@ class DataImporter:
         def _import(tx):
             query = """
             UNWIND $rows AS row
-            MATCH (o:OrderCompra {id_orden: toInteger(row.id_orden)})
+            MATCH (t:Transporte {id_transporte: toInteger(row.id_transporte)})
             MATCH (c:CentroDistribucion {id_centro: toInteger(row.id_centro)})
-            CREATE (o)-[:LLEGA_A {fecha_llegada: CASE WHEN row.fecha_llegada = '' THEN NULL ELSE row.fecha_llegada END}]->(c)
-            CREATE (o)-[:SALE_DE {fecha_salida: CASE WHEN row.fecha_salida = '' THEN NULL ELSE row.fecha_salida END}]->(c)
+            CREATE (t)-[:LLEGA_A {fecha_llegada: CASE WHEN row.fecha_llegada = '' THEN NULL ELSE date(row.fecha_llegada) END, tiempo_real: CASE WHEN row.tiempo_real = '' OR row.tiempo_real IS NULL THEN NULL ELSE toInteger(row.tiempo_real) END, estado: row.estado}]->(c)
+            CREATE (t)-[:SALE_DE {fecha_salida: CASE WHEN row.fecha_salida = '' THEN NULL ELSE date(row.fecha_salida) END, tiempo_estimado: CASE WHEN row.tiempo_estimado = '' OR row.tiempo_estimado IS NULL THEN NULL ELSE toInteger(row.tiempo_estimado) END, estado: row.estado}]->(c)
             RETURN count(*) AS count
             """
             result = tx.run(query, rows=rows)
